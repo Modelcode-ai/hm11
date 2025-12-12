@@ -1,0 +1,246 @@
+/**
+ * @file enum_parsers.hpp
+ * @brief Parsing functions for HM11 enumeration types
+ *
+ * This file defines parsing functions that convert strings to enum values
+ * for HM11 driver enumeration types. These functions are used to parse
+ * responses from the HM11 module.
+ */
+
+#ifndef HM11_ENUM_PARSERS_HPP
+#define HM11_ENUM_PARSERS_HPP
+
+#include <optional>
+#include <string_view>
+
+#include "hm11/enum_types.hpp"
+
+namespace hm11 {
+
+/**
+ * @brief Parse a Role from a string
+ *
+ * @param str String to parse
+ * @return std::optional<Role> The parsed role, or std::nullopt if parsing failed
+ */
+std::optional<Role> parse_role(std::string_view str);
+
+/**
+ * @brief Parse an AdvertisingInterval from a string
+ *
+ * @param str String to parse
+ * @return std::optional<AdvertisingInterval> The parsed interval, or std::nullopt if parsing failed
+ */
+std::optional<AdvertisingInterval> parse_advertising_interval(std::string_view str);
+
+/**
+ * @brief Parse an AdvertisingType from a string
+ *
+ * @param str String to parse
+ * @return std::optional<AdvertisingType> The parsed type, or std::nullopt if parsing failed
+ */
+std::optional<AdvertisingType> parse_advertising_type(std::string_view str);
+
+/**
+ * @brief Parse an AdvertisingMode from a string
+ *
+ * @param str String to parse
+ * @return std::optional<AdvertisingMode> The parsed mode, or std::nullopt if parsing failed
+ */
+std::optional<AdvertisingMode> parse_advertising_mode(std::string_view str);
+
+/**
+ * @brief Parse a MacAddressType from a string
+ *
+ * @param str String to parse
+ * @return std::optional<MacAddressType> The parsed type, or std::nullopt if parsing failed
+ */
+std::optional<MacAddressType> parse_mac_address_type(std::string_view str);
+
+/**
+ * @brief Parse a WriteMethod from a string
+ *
+ * @param str String to parse
+ * @return std::optional<WriteMethod> The parsed method, or std::nullopt if parsing failed
+ */
+std::optional<WriteMethod> parse_write_method(std::string_view str);
+
+/**
+ * @brief Parse a UartBaudRate from a string
+ *
+ * @param str String to parse
+ * @return std::optional<UartBaudRate> The parsed baud rate, or std::nullopt if parsing failed
+ */
+std::optional<UartBaudRate> parse_uart_baud_rate(std::string_view str);
+
+/**
+ * @brief Parse a LinkLayerConnectionInterval from a string
+ *
+ * @param str String to parse
+ * @return std::optional<LinkLayerConnectionInterval> The parsed interval, or std::nullopt if parsing failed
+ */
+std::optional<LinkLayerConnectionInterval> parse_link_layer_connection_interval(std::string_view str);
+
+/**
+ * @brief Parse a ConnectionSupervisionTimeout from a string
+ *
+ * @param str String to parse
+ * @return std::optional<ConnectionSupervisionTimeout> The parsed timeout, or std::nullopt if parsing failed
+ */
+std::optional<ConnectionSupervisionTimeout> parse_connection_supervision_timeout(std::string_view str);
+
+/**
+ * @brief Parse a ConnectResult from a string
+ *
+ * @param str String to parse
+ * @return std::optional<ConnectResult> The parsed result, or std::nullopt if parsing failed
+ */
+std::optional<ConnectResult> parse_connect_result(std::string_view str);
+
+/**
+ * @brief Parse an IBeaconDeployMode from a string
+ *
+ * @param str String to parse
+ * @return std::optional<IBeaconDeployMode> The parsed mode, or std::nullopt if parsing failed
+ */
+std::optional<IBeaconDeployMode> parse_ibeacon_deploy_mode(std::string_view str);
+
+/**
+ * @brief Parse a NotifyResponse from a string
+ *
+ * @param str String to parse
+ * @return std::optional<NotifyResponse> The parsed response, or std::nullopt if parsing failed
+ */
+std::optional<NotifyResponse> parse_notify_response(std::string_view str);
+
+/**
+ * @brief Parse a SendDataMethod from a string
+ *
+ * @param str String to parse
+ * @return std::optional<SendDataMethod> The parsed method, or std::nullopt if parsing failed
+ */
+std::optional<SendDataMethod> parse_send_data_method(std::string_view str);
+
+/**
+ * @brief Parse a SendDataCharacteristic from a string
+ *
+ * @param str String to parse
+ * @return std::optional<SendDataCharacteristic> The parsed characteristic, or std::nullopt if parsing failed
+ */
+std::optional<SendDataCharacteristic> parse_send_data_characteristic(std::string_view str);
+
+/**
+ * @brief Parse a CharacteristicUuidCount from a string
+ *
+ * @param str String to parse
+ * @return std::optional<CharacteristicUuidCount> The parsed count, or std::nullopt if parsing failed
+ */
+std::optional<CharacteristicUuidCount> parse_characteristic_uuid_count(std::string_view str);
+
+/**
+ * @brief Parse an RxGain from a string
+ *
+ * @param str String to parse
+ * @return std::optional<RxGain> The parsed gain, or std::nullopt if parsing failed
+ */
+std::optional<RxGain> parse_rx_gain(std::string_view str);
+
+/**
+ * @brief Parse a WorkType from a string
+ *
+ * @param str String to parse
+ * @return std::optional<WorkType> The parsed type, or std::nullopt if parsing failed
+ */
+std::optional<WorkType> parse_work_type(std::string_view str);
+
+/**
+ * @brief Parse a WorkMode from a string
+ *
+ * @param str String to parse
+ * @return std::optional<WorkMode> The parsed mode, or std::nullopt if parsing failed
+ */
+std::optional<WorkMode> parse_work_mode(std::string_view str);
+
+/**
+ * @brief Parse a NotifyMode from a string
+ *
+ * @param str String to parse
+ * @return std::optional<NotifyMode> The parsed mode, or std::nullopt if parsing failed
+ */
+std::optional<NotifyMode> parse_notify_mode(std::string_view str);
+
+/**
+ * @brief Parse an OutputPower from a string
+ *
+ * @param str String to parse
+ * @return std::optional<OutputPower> The parsed power, or std::nullopt if parsing failed
+ */
+std::optional<OutputPower> parse_output_power(std::string_view str);
+
+/**
+ * @brief Parse a ParityBit from a string
+ *
+ * @param str String to parse
+ * @return std::optional<ParityBit> The parsed parity, or std::nullopt if parsing failed
+ */
+std::optional<ParityBit> parse_parity_bit(std::string_view str);
+
+/**
+ * @brief Parse a PioOutput from a string
+ *
+ * @param str String to parse
+ * @return std::optional<PioOutput> The parsed output, or std::nullopt if parsing failed
+ */
+std::optional<PioOutput> parse_pio_output(std::string_view str);
+
+/**
+ * @brief Parse a ModulePower from a string
+ *
+ * @param str String to parse
+ * @return std::optional<ModulePower> The parsed power, or std::nullopt if parsing failed
+ */
+std::optional<ModulePower> parse_module_power(std::string_view str);
+
+/**
+ * @brief Parse a StopBit from a string
+ *
+ * @param str String to parse
+ * @return std::optional<StopBit> The parsed stop bit, or std::nullopt if parsing failed
+ */
+std::optional<StopBit> parse_stop_bit(std::string_view str);
+
+/**
+ * @brief Parse a SensorType from a string
+ *
+ * @param str String to parse
+ * @return std::optional<SensorType> The parsed type, or std::nullopt if parsing failed
+ */
+std::optional<SensorType> parse_sensor_type(std::string_view str);
+
+/**
+ * @brief Parse a ShowDeviceInformation from a string
+ *
+ * @param str String to parse
+ * @return std::optional<ShowDeviceInformation> The parsed information, or std::nullopt if parsing failed
+ */
+std::optional<ShowDeviceInformation> parse_show_device_information(std::string_view str);
+
+/**
+ * @brief Parse a BondMode from a string
+ *
+ * @param str String to parse
+ * @return std::optional<BondMode> The parsed mode, or std::nullopt if parsing failed
+ */
+std::optional<BondMode> parse_bond_mode(std::string_view str);
+
+/**
+ * @brief Parse a UartSleepType from a string
+ *
+ * @param str String to parse
+ * @return std::optional<UartSleepType> The parsed type, or std::nullopt if parsing failed
+ */
+std::optional<UartSleepType> parse_uart_sleep_type(std::string_view str);
+
+} // namespace hm11
+
+#endif // HM11_ENUM_PARSERS_HPP

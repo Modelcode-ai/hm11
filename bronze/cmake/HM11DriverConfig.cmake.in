@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/HM11DriverTargets.cmake")
+
+# Include any dependencies
+include(CMakeFindDependencyMacro)
+# Example: find_dependency(Boost REQUIRED)
+
+# Provide components
+check_required_components(HM11Driver)

@@ -1,0 +1,152 @@
+// SPDX-FileCopyrightText: 2025
+// SPDX-License-Identifier: MIT
+
+/**
+ * @file streaming_parser.hpp
+ * @brief Streaming response parser for HM11 scan operations.
+ *
+ * Implements a state machine to parse incremental responses from scan operations
+ * that return multiple devices over a stream. Handles MAC addresses, device names,
+ * and RSSI values that may arrive in fragments across multiple UART reads.
+ */
+
+#pragma once
+
+#include <array>
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <string_view>
+
+namespace hm11 {
+
+/**
+ * @brief Information about a discovered Bluetooth device.
+ */
+struct DiscoveredDevice {
+    std::array<char, 12> mac;  // MAC address (12 hex chars, e.g., "001122334455")
+    std::string name;          // Device name (variable length)
+    std::string rssi;          // RSSI value as string (variable length)
+
+    DiscoveredDevice() : mac{}, name{}, rssi{} {}
+
+    void clear() {
+        mac.fill('\0');
+        name.clear();
+        rssi.clear();
+    }
+
+    bool has_mac() const {
+        return mac[0] != '\0';
+    }
+};
+
+/**
+ * @brief Callback type for discovered devices (C-style function pointer).
+ *
+ * @param device The discovered device information.
+ * @param user_data Optional user data pointer passed through from parser construction.
+ */
+using DiscoveredCallback = void (*)(const DiscoveredDevice& device, void* user_data);
+
+/**
+ * @brief State machine for parsing streaming scan responses.
+ *
+ * The HM11 scan operation returns a stream of responses:
+ * - OK+DISCS (scan start)
+ * - OK+DISC:<MAC> (device MAC address, 12 hex chars)
+ * - OK+NAME:<name>\r\n (device name, variable length)
+ * - OK+RSSI:<rssi>\r\n (RSSI value, variable length)
+ * - OK+DISCE (scan end)
+ *
+ * This parser handles incremental data arrival and calls the callback
+ * for each complete device discovered.
+ */
+class StreamingParser {
+public:
+    /**
+     * @brief Parser states.
+     */
+    enum class State {
+        Selection,  // Looking for next prefix (OK+DISCS, OK+DISC:, OK+NAME:, OK+RSSI:, OK+DISCE)
+        MAC,        // Reading MAC address (12 chars)
+        Name,       // Reading device name (until \r\n)
+        RSSI,       // Reading RSSI value (until \r\n)
+        Complete    // Scan complete (OK+DISCE received)
+    };
+
+    /**
+     * @brief Construct a new streaming parser.
+     *
+     * @param callback Function to call when a device is discovered.
+     * @param user_data Optional user data pointer to pass to callback.
+     */
+    explicit StreamingParser(DiscoveredCallback callback, void* user_data = nullptr);
+
+    /**
+     * @brief Parse a chunk of data from the stream.
+     *
+     * @param data Pointer to data buffer.
+     * @param size Number of bytes in the buffer.
+     * @return true if scan is complete (OK+DISCE received), false otherwise.
+     */
+    bool parse(const std::uint8_t* data, std::size_t size);
+
+    /**
+     * @brief Get the current parser state.
+     */
+    State get_state() const { return state_; }
+
+    /**
+     * @brief Check if scan is complete.
+     */
+    bool is_complete() const { return state_ == State::Complete; }
+
+    /**
+     * @brief Reset the parser to initial state.
+     */
+    void reset();
+
+    /**
+     * @brief Flush any pending device data by calling the callback.
+     *
+     * Should be called at the end of parsing to ensure the last device
+     * is reported if it doesn't have all fields.
+     */
+    void flush();
+
+private:
+    /**
+     * @brief Check if buffer starts with a prefix at current position.
+     */
+    bool starts_with(std::string_view prefix) const;
+
+    /**
+     * @brief Consume bytes from the buffer.
+     */
+    void consume(std::size_t count);
+
+    /**
+     * @brief Find a substring in the buffer.
+     * @return Position of substring, or std::string::npos if not found.
+     */
+    std::size_t find(std::string_view needle) const;
+
+    /**
+     * @brief Append data to current field (name or RSSI).
+     */
+    void append_to_current_field(std::string_view data);
+
+    /**
+     * @brief Call the callback with current device and reset it.
+     */
+    void invoke_callback();
+
+    DiscoveredCallback callback_;
+    void* user_data_;
+    DiscoveredDevice current_device_;
+    State state_;
+    std::string buffer_;  // Accumulates partial data between parse() calls
+};
+
+} // namespace hm11

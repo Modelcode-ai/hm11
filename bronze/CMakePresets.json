@@ -1,0 +1,465 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug",
+            "description": "Native build with Clang (Debug, sanitizers enabled by default)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/clang-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "ON",
+                "ENABLE_SANITIZERS": "ON",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release",
+            "description": "Native build with Clang (Release, optimized, no sanitizers)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/clang-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "ON",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "gcc-debug",
+            "displayName": "GCC Debug",
+            "description": "Native build with GCC 14 (Debug, sanitizers enabled by default)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/gcc-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "g++-14",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "ON",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "gcc-release",
+            "displayName": "GCC Release",
+            "description": "Native build with GCC 14 (Release, optimized, no sanitizers)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/gcc-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_COMPILER": "g++-14",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "stm32f429-debug",
+            "displayName": "STM32F429 Debug",
+            "description": "Cross-compilation for STM32F429 Discovery board (Debug build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32f429-debug",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32F429xx",
+                "CMSIS_DEVICE_HEADER": "stm32f429xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32F429ZITx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
+                "CXXFLAGS": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16"
+            }
+        },
+        {
+            "name": "stm32f429-release",
+            "displayName": "STM32F429 Release",
+            "description": "Cross-compilation for STM32F429 Discovery board (Release build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32f429-release",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32F429xx",
+                "CMSIS_DEVICE_HEADER": "stm32f429xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32F429ZITx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16",
+                "CXXFLAGS": "-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16"
+            }
+        },
+        {
+            "name": "stm32f746-debug",
+            "displayName": "STM32F746 Debug",
+            "description": "Cross-compilation for STM32F746 Discovery board (Debug build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32f746-debug",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32F746xx",
+                "STM32F7": "TRUE",
+                "CMSIS_DEVICE_HEADER": "stm32f746xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32F746NGHx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16",
+                "CXXFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16"
+            }
+        },
+        {
+            "name": "stm32f746-release",
+            "displayName": "STM32F746 Release",
+            "description": "Cross-compilation for STM32F746 Discovery board (Release build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32f746-release",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32F746xx",
+                "STM32F7": "TRUE",
+                "CMSIS_DEVICE_HEADER": "stm32f746xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32F746NGHx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16",
+                "CXXFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16"
+            }
+        },
+        {
+            "name": "stm32h743-debug",
+            "displayName": "STM32H743 Debug",
+            "description": "Cross-compilation for STM32H743 Nucleo board (Debug build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32h743-debug",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32H743xx",
+                "STM32H7": "TRUE",
+                "CMSIS_DEVICE_HEADER": "stm32h743xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32H743ZITx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16",
+                "CXXFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16"
+            }
+        },
+        {
+            "name": "stm32h743-release",
+            "displayName": "STM32H743 Release",
+            "description": "Cross-compilation for STM32H743 Nucleo board (Release build)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/stm32h743-release",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_SYSTEM_NAME": "Generic",
+                "CMAKE_SYSTEM_PROCESSOR": "ARM",
+                "STM32_DEVICE": "STM32H743xx",
+                "STM32H7": "TRUE",
+                "CMSIS_DEVICE_HEADER": "stm32h743xx.h",
+                "LINKER_SCRIPT": "${sourceDir}/cmake/linker-scripts/STM32H743ZITx_FLASH.ld",
+                "CMSIS_PATH": "${sourceDir}/vendor/CMSIS",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF"
+            },
+            "environment": {
+                "CFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16",
+                "CXXFLAGS": "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16"
+            }
+        },
+        {
+            "name": "clang-stress",
+            "displayName": "Clang Stress Tests",
+            "description": "Stress tests with ThreadSanitizer (Clang)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/clang-stress",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "ON",
+                "ENABLE_STRESS_TESTS": "ON"
+            }
+        },
+        {
+            "name": "gcc-stress",
+            "displayName": "GCC Stress Tests",
+            "description": "Stress tests with ThreadSanitizer (GCC)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/gcc-stress",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "g++-14",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "ON",
+                "ENABLE_STRESS_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang-fuzz",
+            "displayName": "Clang Fuzzing",
+            "description": "Fuzzing tests with LibFuzzer (Clang only)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/clang-fuzz",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "OFF",
+                "ENABLE_FUZZING": "ON"
+            }
+        },
+        {
+            "name": "gcc-coverage",
+            "displayName": "GCC Coverage",
+            "description": "Native build with GCC 14 (Debug, code coverage enabled)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/gcc-coverage",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "g++-14",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "ON",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang-coverage",
+            "displayName": "Clang Coverage",
+            "description": "Native build with Clang (Debug, code coverage enabled)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/clang-coverage",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "ON",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "sonarqube",
+            "displayName": "SonarQube Analysis",
+            "description": "Release build optimized for SonarQube static analysis",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/sonarqube",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_COMPILER": "clang++-20",
+                "ENABLE_CLANG_TIDY": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTS": "ON",
+                "SONAR_SCANNER_EXECUTABLE": "/usr/local/bin/sonar-scanner"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug Build",
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release Build",
+            "configurePreset": "clang-release"
+        },
+        {
+            "name": "gcc-debug",
+            "displayName": "GCC Debug Build",
+            "configurePreset": "gcc-debug"
+        },
+        {
+            "name": "gcc-release",
+            "displayName": "GCC Release Build",
+            "configurePreset": "gcc-release"
+        },
+        {
+            "name": "stm32f429-debug",
+            "displayName": "STM32F429 Debug Build",
+            "configurePreset": "stm32f429-debug",
+            "description": "Build for STM32F429 (Debug)"
+        },
+        {
+            "name": "stm32f429-release",
+            "displayName": "STM32F429 Release Build",
+            "configurePreset": "stm32f429-release",
+            "description": "Build for STM32F429 (Release)"
+        },
+        {
+            "name": "stm32f746-debug",
+            "displayName": "STM32F746 Debug Build",
+            "configurePreset": "stm32f746-debug",
+            "description": "Build for STM32F746 (Debug)"
+        },
+        {
+            "name": "stm32f746-release",
+            "displayName": "STM32F746 Release Build",
+            "configurePreset": "stm32f746-release",
+            "description": "Build for STM32F746 (Release)"
+        },
+        {
+            "name": "stm32h743-debug",
+            "displayName": "STM32H743 Debug Build",
+            "configurePreset": "stm32h743-debug",
+            "description": "Build for STM32H743 (Debug)"
+        },
+        {
+            "name": "stm32h743-release",
+            "displayName": "STM32H743 Release Build",
+            "configurePreset": "stm32h743-release",
+            "description": "Build for STM32H743 (Release)"
+        },
+        {
+            "name": "clang-stress",
+            "displayName": "Clang Stress Tests Build",
+            "configurePreset": "clang-stress",
+            "description": "Build stress tests with ThreadSanitizer"
+        },
+        {
+            "name": "gcc-stress",
+            "displayName": "GCC Stress Tests Build",
+            "configurePreset": "gcc-stress",
+            "description": "Build stress tests with ThreadSanitizer"
+        },
+        {
+            "name": "clang-fuzz",
+            "displayName": "Clang Fuzzing Build",
+            "configurePreset": "clang-fuzz",
+            "description": "Build fuzzing tests with LibFuzzer"
+        },
+        {
+            "name": "gcc-coverage",
+            "displayName": "GCC Coverage Build",
+            "configurePreset": "gcc-coverage",
+            "description": "Build with code coverage instrumentation (GCC)"
+        },
+        {
+            "name": "clang-coverage",
+            "displayName": "Clang Coverage Build",
+            "configurePreset": "clang-coverage",
+            "description": "Build with code coverage instrumentation (Clang)"
+        },
+        {
+            "name": "sonarqube",
+            "displayName": "SonarQube Build",
+            "configurePreset": "sonarqube",
+            "description": "Build and prepare for SonarQube analysis"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug Tests",
+            "configurePreset": "clang-debug",
+            "output": {
+                "verbosity": "default",
+                "shortProgress": true
+            }
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release Tests",
+            "configurePreset": "clang-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-debug",
+            "displayName": "GCC Debug Tests",
+            "configurePreset": "gcc-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-release",
+            "displayName": "GCC Release Tests",
+            "configurePreset": "gcc-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang-stress",
+            "displayName": "Clang Stress Tests",
+            "configurePreset": "clang-stress",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-stress",
+            "displayName": "GCC Stress Tests",
+            "configurePreset": "gcc-stress",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "gcc-coverage",
+            "displayName": "GCC Coverage Tests",
+            "configurePreset": "gcc-coverage",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "clang-coverage",
+            "displayName": "Clang Coverage Tests",
+            "configurePreset": "clang-coverage",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

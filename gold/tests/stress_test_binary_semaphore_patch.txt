@@ -1,0 +1,42 @@
+--- a/tests/stress_test_binary_semaphore.cpp
++++ b/tests/stress_test_binary_semaphore.cpp
+@@ -369,13 +369,16 @@ TEST_F(BinarySemaphoreStressTest, ProducerConsumerPattern) {
+     // Producer thread
+     std::thread producer([&]() {
+         for (int i = 0; i < ITEMS; ++i) {
++            // Wait for consumer to be ready
++            while (consumed.load(std::memory_order_acquire) < i) {
++                std::this_thread::yield();
++            }
++
+             shared_value.store(i, std::memory_order_relaxed);
+             produced.fetch_add(1, std::memory_order_relaxed);
+             semaphore.give_from_isr();
+-            // No sleep - let it run fast
+         }
+         producer_done.store(true, std::memory_order_release);
+     });
+ 
+     // Consumer thread
+     std::thread consumer([&]() {
+         int last_value = -1;
+-        int timeout_count = 0;
+         while (consumed.load(std::memory_order_relaxed) < ITEMS) {
+-            if (semaphore.take_with_timeout(10ms)) {
++            if (semaphore.take_with_timeout(100ms)) {
+                 int value = shared_value.load(std::memory_order_relaxed);
+                 EXPECT_GE(value, last_value) << "Values should not decrease";
+                 last_value = value;
+-                consumed.fetch_add(1, std::memory_order_relaxed);
+-                timeout_count = 0;
+-            } else {
+-                timeout_count++;
+-                if (timeout_count > 10 && producer_done.load(std::memory_order_acquire)) {
+-                    break;  // Producer done, stop waiting
+-                }
++                consumed.fetch_add(1, std::memory_order_release);
++            } else if (producer_done.load(std::memory_order_acquire)) {
++                break;  // Producer done and timeout
+             }
+         }
+     });

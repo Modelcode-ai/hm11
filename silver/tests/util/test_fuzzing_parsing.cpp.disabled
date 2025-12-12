@@ -1,0 +1,564 @@
+// Fuzzing Tests for HM11 Driver Parsing Utilities
+// Tests parsing robustness with malformed, edge case, and random input data
+// Validates error handling and prevents crashes with invalid inputs
+
+#include <gtest/gtest.h>
+
+#include <vector>
+#include <string>
+#include <random>
+#include <algorithm>
+#include <cstring>
+
+#include "hm11/util/parsing.hpp"
+#include "hm11/types.hpp"
+
+using namespace hm11;
+
+class FuzzingParsingTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // Initialize random generator with fixed seed for reproducible tests
+        generator.seed(42);
+    }
+
+    void TearDown() override {
+        // Clean up any resources
+    }
+
+    // Generate random string of specified length
+    std::string generate_random_string(size_t length) {
+        static const char charset[] = 
+            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;':\",./<>?`~";
+        
+        std::uniform_int_distribution<> dis(0, sizeof(charset) - 2);
+        
+        std::string result;
+        result.reserve(length);
+        
+        for (size_t i = 0; i < length; ++i) {
+            result += charset[dis(generator)];
+        }
+        
+        return result;
+    }
+
+    // Generate random hex string
+    std::string generate_random_hex(size_t length) {
+        static const char hex_chars[] = "0123456789ABCDEF";
+        std::uniform_int_distribution<> dis(0, 15);
+        
+        std::string result;
+        result.reserve(length);
+        
+        for (size_t i = 0; i < length; ++i) {
+            result += hex_chars[dis(generator)];
+        }
+        
+        return result;
+    }
+
+    // Generate random invalid hex string (contains non-hex characters)
+    std::string generate_invalid_hex(size_t length) {
+        static const char invalid_chars[] = "GHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;':\",./<>?`~";
+        std::uniform_int_distribution<> valid_dis(0, 15);
+        std::uniform_int_distribution<> invalid_dis(0, sizeof(invalid_chars) - 2);
+        std::uniform_int_distribution<> choice_dis(0, 1);
+        
+        std::string result;
+        result.reserve(length);
+        
+        for (size_t i = 0; i < length; ++i) {
+            if (choice_dis(generator)) {
+                // Valid hex character
+                result += "0123456789ABCDEF"[valid_dis(generator)];
+            } else {
+                // Invalid character
+                result += invalid_chars[invalid_dis(generator)];
+            }
+        }
+        
+        return result;
+    }
+
+    // Generate malformed AT response
+    std::string generate_malformed_response() {
+        std::vector<std::string> prefixes = {"OK+", "ERR", "INVALID", "", "OK+Get", "AT+"};
+        std::vector<std::string> suffixes = {":", "?", "=", "", "\r\n", "\n", "\r"};
+        
+        std::uniform_int_distribution<> prefix_dis(0, prefixes.size() - 1);
+        std::uniform_int_distribution<> suffix_dis(0, suffixes.size() - 1);
+        std::uniform_int_distribution<> data_len_dis(0, 100);
+        
+        std::string result = prefixes[prefix_dis(generator)];
+        result += generate_random_string(data_len_dis(generator));
+        result += suffixes[suffix_dis(generator)];
+        
+        return result;
+    }
+
+private:
+    std::mt19937 generator;
+};
+
+// ============================================================================
+// FixedString Fuzzing Tests
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, FixedStringFuzzingWithRandomLengths) {
+    // Test FixedString with random length inputs
+    constexpr size_t NUM_TESTS = 1000;
+    
+    for (size_t test = 0; test < NUM_TESTS; ++test) {
+        std::uniform_int_distribution<> length_dis(0, 200);
+        size_t random_length = length_dis(generator);
+        std::string random_data = generate_random_string(random_length);
+        
+        // Test various FixedString sizes
+        if (random_length <= 32) {
+            // Test with IBeaconUuid (32 characters)
+            if (random_length == 32) {
+                // Should work if all hex
+                bool all_hex = std::all_of(random_data.begin(), random_data.end(),
+                    [](char c) { return std::isdigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'); });
+                
+                if (all_hex) {
+                    EXPECT_NO_THROW({
+                        IBeaconUuid uuid(random_data);
+                        EXPECT_EQ(uuid.size(), 32);
+                    });
+                } else {
+                    EXPECT_THROW({
+                        IBeaconUuid uuid(random_data);
+                    }, std::exception);
+                }
+            } else {
+                // Wrong length should always throw
+                EXPECT_THROW({
+                    IBeaconUuid uuid(random_data);
+                }, std::exception);
+            }
+        }
+        
+        if (random_length <= 12) {
+            // Test with MacAddress (12 characters)
+            if (random_length == 12) {
+                bool all_hex = std::all_of(random_data.begin(), random_data.end(),
+                    [](char c) { return std::isdigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'); });
+                
+                if (all_hex) {
+                    EXPECT_NO_THROW({
+                        MacAddress mac(random_data);
+                        EXPECT_EQ(mac.size(), 12);
+                    });
+                } else {
+                    EXPECT_THROW({
+                        MacAddress mac(random_data);
+                    }, std::exception);
+                }
+            } else {
+                EXPECT_THROW({
+                    MacAddress mac(random_data);
+                }, std::exception);
+            }
+        }
+        
+        if (random_length <= 2) {
+            // Test with WorkInterval (2 digits)
+            if (random_length == 2) {
+                bool all_digits = std::all_of(random_data.begin(), random_data.end(),
+                    [](char c) { return std::isdigit(c); });
+                
+                if (all_digits) {
+                    EXPECT_NO_THROW({
+                        WorkInterval interval(random_data);
+                        EXPECT_EQ(interval.size(), 2);
+                    });
+                } else {
+                    EXPECT_THROW({
+                        WorkInterval interval(random_data);
+                    }, std::exception);
+                }
+            } else {
+                EXPECT_THROW({
+                    WorkInterval interval(random_data);
+                }, std::exception);
+            }
+        }
+    }
+}
+
+TEST_F(FuzzingParsingTest, FixedStringEdgeCaseCharacters) {
+    // Test with edge case characters
+    const std::vector<std::string> edge_cases = {
+        "",                          // Empty string
+        "\0",                       // Null character
+        "\r\n",                     // CRLF
+        "\x7F\x80\xFF",            // High ASCII/binary
+        "            ",             // All spaces
+        "000000000000000000000000000000000000", // Too long valid hex
+        "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",     // Invalid hex, correct length
+        "abcdefghijklmnopqrstuvwxyz123456",     // Mixed case
+    };
+    
+    for (const auto& edge_case : edge_cases) {
+        // Test with different FixedString types
+        EXPECT_THROW({
+            IBeaconUuid uuid(edge_case);
+        }, std::exception);
+        
+        EXPECT_THROW({
+            MacAddress mac(edge_case);
+        }, std::exception);
+        
+        EXPECT_THROW({
+            WorkInterval interval(edge_case);
+        }, std::exception);
+        
+        EXPECT_THROW({
+            VersionType version(edge_case);
+        }, std::exception);
+    }
+}
+
+// ============================================================================
+// RangedInteger Fuzzing Tests
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, RangedIntegerFuzzingWithRandomValues) {
+    // Test RangedInteger with random values
+    constexpr size_t NUM_TESTS = 10000;
+    
+    std::uniform_int_distribution<int> value_dis(-1000, 1000);
+    
+    for (size_t test = 0; test < NUM_TESTS; ++test) {
+        int random_value = value_dis(generator);
+        
+        // Test TemperatureType (0-120)
+        if (random_value >= 0 && random_value <= 120) {
+            EXPECT_NO_THROW({
+                TemperatureType temp(static_cast<uint8_t>(random_value));
+                EXPECT_EQ(temp.value(), static_cast<uint8_t>(random_value));
+            });
+        } else if (random_value >= 0 && random_value <= 255) {
+            // Values in uint8_t range but outside temperature range
+            EXPECT_THROW({
+                TemperatureType temp(static_cast<uint8_t>(random_value));
+            }, std::exception);
+        }
+        
+        // Test HumidityType (0-100)
+        if (random_value >= 0 && random_value <= 100) {
+            EXPECT_NO_THROW({
+                HumidityType humidity(static_cast<uint8_t>(random_value));
+                EXPECT_EQ(humidity.value(), static_cast<uint8_t>(random_value));
+            });
+        } else if (random_value >= 0 && random_value <= 255) {
+            EXPECT_THROW({
+                HumidityType humidity(static_cast<uint8_t>(random_value));
+            }, std::exception);
+        }
+        
+        // Test with Percent (0-100)
+        if (random_value >= 0 && random_value <= 100) {
+            EXPECT_NO_THROW({
+                Percent percent(static_cast<uint8_t>(random_value));
+                EXPECT_EQ(percent.value(), static_cast<uint8_t>(random_value));
+            });
+        } else if (random_value >= 0 && random_value <= 255) {
+            EXPECT_THROW({
+                Percent percent(static_cast<uint8_t>(random_value));
+            }, std::exception);
+        }
+    }
+}
+
+TEST_F(FuzzingParsingTest, RangedIntegerBoundaryFuzzing) {
+    // Test boundary conditions with fuzzing
+    
+    // Temperature boundaries (0-120)
+    for (int offset = -10; offset <= 10; ++offset) {
+        int test_value = 0 + offset;
+        if (test_value >= 0 && test_value <= 120) {
+            EXPECT_NO_THROW(TemperatureType(static_cast<uint8_t>(test_value)));
+        } else if (test_value >= 0 && test_value <= 255) {
+            EXPECT_THROW(TemperatureType(static_cast<uint8_t>(test_value)), std::exception);
+        }
+        
+        test_value = 120 + offset;
+        if (test_value >= 0 && test_value <= 120) {
+            EXPECT_NO_THROW(TemperatureType(static_cast<uint8_t>(test_value)));
+        } else if (test_value >= 0 && test_value <= 255) {
+            EXPECT_THROW(TemperatureType(static_cast<uint8_t>(test_value)), std::exception);
+        }
+    }
+    
+    // Humidity boundaries (0-100)
+    for (int offset = -10; offset <= 10; ++offset) {
+        int test_value = 0 + offset;
+        if (test_value >= 0 && test_value <= 100) {
+            EXPECT_NO_THROW(HumidityType(static_cast<uint8_t>(test_value)));
+        } else if (test_value >= 0 && test_value <= 255) {
+            EXPECT_THROW(HumidityType(static_cast<uint8_t>(test_value)), std::exception);
+        }
+        
+        test_value = 100 + offset;
+        if (test_value >= 0 && test_value <= 100) {
+            EXPECT_NO_THROW(HumidityType(static_cast<uint8_t>(test_value)));
+        } else if (test_value >= 0 && test_value <= 255) {
+            EXPECT_THROW(HumidityType(static_cast<uint8_t>(test_value)), std::exception);
+        }
+    }
+}
+
+// ============================================================================
+// AT Response Parsing Fuzzing Tests
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, ATResponseParsingWithMalformedData) {
+    // Test AT response parsing with malformed data
+    constexpr size_t NUM_TESTS = 5000;
+    
+    for (size_t test = 0; test < NUM_TESTS; ++test) {
+        std::string malformed_response = generate_malformed_response();
+        
+        // Test parsing various response types - should not crash
+        std::string_view response_view(malformed_response);
+        
+        // Test basic parsing utilities (these should handle malformed input gracefully)
+        try {
+            // Test if it looks like a valid response
+            bool has_ok_prefix = response_view.find("OK+") == 0;
+            bool has_colon = response_view.find(':') != std::string_view::npos;
+            
+            if (has_ok_prefix && has_colon) {
+                // Attempt to extract value after colon
+                size_t colon_pos = response_view.find(':');
+                if (colon_pos + 1 < response_view.size()) {
+                    std::string_view value_part = response_view.substr(colon_pos + 1);
+                    
+                    // Try parsing as various types (should not crash, may throw)
+                    try {
+                        // Test integer parsing
+                        if (value_part.size() <= 3 && !value_part.empty()) {
+                            bool all_digits = std::all_of(value_part.begin(), value_part.end(),
+                                [](char c) { return std::isdigit(c); });
+                            if (all_digits) {
+                                int parsed_value = std::stoi(std::string(value_part));
+                                (void)parsed_value; // Use the value to avoid warnings
+                            }
+                        }
+                        
+                        // Test hex parsing
+                        if (value_part.size() <= 8 && !value_part.empty()) {
+                            bool all_hex = std::all_of(value_part.begin(), value_part.end(),
+                                [](char c) { return std::isxdigit(c); });
+                            if (all_hex) {
+                                unsigned int parsed_hex = std::stoul(std::string(value_part), nullptr, 16);
+                                (void)parsed_hex; // Use the value to avoid warnings
+                            }
+                        }
+                    } catch (const std::exception&) {
+                        // Expected for malformed data - should not crash
+                    }
+                }
+            }
+        } catch (const std::exception&) {
+            // Expected for completely malformed data - should not crash
+        }
+    }
+}
+
+TEST_F(FuzzingParsingTest, DiscoveryDataParsingFuzzing) {
+    // Test discovery data parsing with fuzzing
+    constexpr size_t NUM_TESTS = 2000;
+    
+    for (size_t test = 0; test < NUM_TESTS; ++test) {
+        // Generate random discovery-like responses
+        std::string mock_response = "OK+DISC";
+        
+        // Add random data that might look like discovery data
+        mock_response += generate_random_string(std::uniform_int_distribution<>(0, 100)(generator));
+        
+        // Sometimes add proper terminators
+        if (std::uniform_int_distribution<>(0, 1)(generator)) {
+            mock_response += "\r\n";
+        }
+        
+        // Test parsing without crashing
+        try {
+            std::string_view response_view(mock_response);
+            
+            // Look for discovery patterns
+            if (response_view.find("OK+DISC") == 0) {
+                if (response_view.size() > 7) {
+                    std::string_view data_part = response_view.substr(7);
+                    
+                    // Try to parse as MAC address (12 hex chars)
+                    if (data_part.size() >= 12) {
+                        std::string_view potential_mac = data_part.substr(0, 12);
+                        bool all_hex = std::all_of(potential_mac.begin(), potential_mac.end(),
+                            [](char c) { return std::isxdigit(c); });
+                        
+                        if (all_hex) {
+                            try {
+                                MacAddress test_mac(std::string(potential_mac));
+                                // Success - valid MAC address format
+                            } catch (const std::exception&) {
+                                // Expected for invalid data
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (const std::exception&) {
+            // Expected for malformed data - should not crash
+        }
+    }
+}
+
+// ============================================================================
+// Binary Data Fuzzing Tests
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, BinaryDataHandling) {
+    // Test handling of binary/non-printable data
+    constexpr size_t NUM_TESTS = 1000;
+    
+    for (size_t test = 0; test < NUM_TESTS; ++test) {
+        // Generate random binary data
+        std::uniform_int_distribution<> byte_dis(0, 255);
+        std::uniform_int_distribution<> length_dis(1, 200);
+        
+        size_t data_length = length_dis(generator);
+        std::vector<uint8_t> binary_data;
+        binary_data.reserve(data_length);
+        
+        for (size_t i = 0; i < data_length; ++i) {
+            binary_data.push_back(static_cast<uint8_t>(byte_dis(generator)));
+        }
+        
+        // Convert to string (may contain null bytes and non-printable characters)
+        std::string binary_string(binary_data.begin(), binary_data.end());
+        
+        // Test that our types handle binary data gracefully
+        try {
+            // Most operations should reject binary data
+            if (binary_string.size() == 32) {
+                EXPECT_THROW({
+                    IBeaconUuid uuid(binary_string);
+                }, std::exception);
+            }
+            
+            if (binary_string.size() == 12) {
+                EXPECT_THROW({
+                    MacAddress mac(binary_string);
+                }, std::exception);
+            }
+            
+            if (binary_string.size() == 2) {
+                EXPECT_THROW({
+                    WorkInterval interval(binary_string);
+                }, std::exception);
+            }
+        } catch (const std::exception&) {
+            // Expected - binary data should be rejected
+        }
+    }
+}
+
+// ============================================================================
+// Unicode and Extended Character Tests
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, UnicodeAndExtendedCharacters) {
+    // Test handling of Unicode and extended characters
+    const std::vector<std::string> unicode_tests = {
+        "café",                     // Latin-1
+        "你好",                      // Chinese
+        "🚀",                       // Emoji
+        "Ω",                        // Greek
+        "Ñ",                        // Spanish
+        "\u0000\u0001\u0002",      // Control characters
+        "\xFF\xFE\xFD",            // High bytes
+    };
+    
+    for (const auto& unicode_str : unicode_tests) {
+        // All FixedString types should reject Unicode/extended characters
+        EXPECT_THROW({
+            if (unicode_str.size() == 32) {
+                IBeaconUuid uuid(unicode_str);
+            }
+        }, std::exception);
+        
+        EXPECT_THROW({
+            if (unicode_str.size() == 12) {
+                MacAddress mac(unicode_str);
+            }
+        }, std::exception);
+        
+        EXPECT_THROW({
+            if (unicode_str.size() == 2) {
+                WorkInterval interval(unicode_str);
+            }
+        }, std::exception);
+    }
+}
+
+// ============================================================================
+// Performance Under Fuzzing Load
+// ============================================================================
+
+TEST_F(FuzzingParsingTest, FuzzingPerformanceStress) {
+    // Test that fuzzing doesn't cause severe performance degradation
+    constexpr size_t STRESS_TESTS = 100000;
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    
+    size_t successful_parses = 0;
+    size_t failed_parses = 0;
+    
+    for (size_t test = 0; test < STRESS_TESTS; ++test) {
+        try {
+            // Generate random valid hex string
+            std::string hex_data = generate_random_hex(12);
+            MacAddress mac(hex_data);
+            successful_parses++;
+        } catch (const std::exception&) {
+            failed_parses++;
+        }
+        
+        try {
+            // Generate random invalid data
+            std::string invalid_data = generate_invalid_hex(12);
+            MacAddress mac(invalid_data);
+            // Should not reach here
+        } catch (const std::exception&) {
+            failed_parses++;
+        }
+    }
+    
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto execution_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    
+    // Should complete stress test in reasonable time (< 1 second)
+    EXPECT_LT(execution_time.count(), 1000000); // 1 second in microseconds
+    
+    // Should have successfully parsed valid hex strings
+    EXPECT_GT(successful_parses, 0);
+    
+    // Should have failed on invalid data
+    EXPECT_GT(failed_parses, 0);
+    
+    auto operations_per_second = (STRESS_TESTS * 1000000.0) / execution_time.count();
+    
+    std::cout << "Fuzzing Performance Metrics:" << std::endl;
+    std::cout << "  Total operations: " << STRESS_TESTS << std::endl;
+    std::cout << "  Execution time: " << execution_time.count() << " μs" << std::endl;
+    std::cout << "  Operations/second: " << operations_per_second << std::endl;
+    std::cout << "  Successful parses: " << successful_parses << std::endl;
+    std::cout << "  Failed parses: " << failed_parses << std::endl;
+    
+    // Should achieve good performance (> 100k operations/second)
+    EXPECT_GT(operations_per_second, 100000.0);
+}
