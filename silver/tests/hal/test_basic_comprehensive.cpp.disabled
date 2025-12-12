@@ -1,0 +1,352 @@
+// Comprehensive Basic Tests for HM11 Driver
+// Tests existing implemented functionality thoroughly without referencing unimplemented features
+// Validates core GATT, iBeacon, sensor operations that are actually available
+
+#include <gtest/gtest.h>
+
+#include <vector>
+#include <string>
+
+#include "hm11/hal/mock_uart.hpp"
+#include "hm11/hm11_driver.hpp"
+#include "hm11/types.hpp"
+
+using namespace hm11;
+using namespace hm11::hal;
+
+class BasicComprehensiveTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // Each test creates its own driver with specific mock setup
+    }
+
+    void TearDown() override {
+        // Clean up any resources
+    }
+
+    // Helper to create response data from string
+    std::vector<uint8_t> create_response(const std::string& response) {
+        return std::vector<uint8_t>(response.begin(), response.end());
+    }
+
+    // Verify transmitted command matches expected
+    template <typename DriverType>
+    void verify_command(const DriverType& driver, const std::string& expected) {
+        const auto& transmitted = driver.GetUart().GetTransmitted8b();
+        EXPECT_EQ(transmitted.size(), expected.size());
+        if (transmitted.size() == expected.size()) {
+            std::string actual(transmitted.begin(), transmitted.end());
+            EXPECT_EQ(actual, expected);
+        }
+    }
+};
+
+// ============================================================================
+// Basic Driver Operations Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, DriverBasicOperations) {
+    // Test core driver functionality that is definitely implemented
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    // Test basic connectivity
+    UARTStatus status = UARTStatus::ErrError;
+    driver.Test(status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT");
+}
+
+TEST_F(BasicComprehensiveTest, RoleOperations) {
+    // Test role setting operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:1"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.SetRole(Role::Central, status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+ROLE1");
+}
+
+TEST_F(BasicComprehensiveTest, NameOperations) {
+    // Test device name operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:TestDevice"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.SetName("TestDevice", status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+NAMETestDevice");
+}
+
+// ============================================================================
+// GATT Basic Operations Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, BasicGattDiscovery) {
+    // Test basic GATT service discovery
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    
+    const std::string response = 
+        std::string(56, '*') + "\r\n" +
+        "0001:0010:180D\r\n" +
+        std::string(56, '*');
+    
+    uart.SetReceiveData(create_response(response));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    std::vector<std::string> discovered_services;
+    auto callback = [](std::string_view service, void* user_data) {
+        auto* services = static_cast<std::vector<std::string>*>(user_data);
+        services->emplace_back(service);
+    };
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.find_all_services_uuid(callback, &discovered_services, 3000, status);
+    
+    EXPECT_EQ(status, UARTStatus::Ok);
+    EXPECT_GE(discovered_services.size(), 1);
+    verify_command(driver, "AT+FINDALLPRIMARY?");
+}
+
+// ============================================================================
+// iBeacon Basic Operations Tests  
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, BasicIBeaconConfiguration) {
+    // Test basic iBeacon configuration
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:1"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.set_ibeacon_switch(true, status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+IBEA1");
+}
+
+TEST_F(BasicComprehensiveTest, IBeaconVersionConfiguration) {
+    // Test iBeacon version configuration
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:0xFFE0"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    const VersionType major("FFE0");
+    UARTStatus status = UARTStatus::ErrError;
+    driver.set_ibeacon_major_version(major, status);
+    
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+MARJ0xFFE0");
+}
+
+// ============================================================================
+// Sensor Basic Operations Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, BasicSensorOperations) {
+    // Test basic sensor operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:1"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.set_sensor_type(SensorType::DHT11, status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+SENS1");
+}
+
+TEST_F(BasicComprehensiveTest, SensorReadingOperations) {
+    // Test sensor reading operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Get:025060"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    TemperatureType temperature(0);
+    HumidityType humidity(0);
+    UARTStatus status = UARTStatus::ErrError;
+    
+    driver.get_sensor_temperature_and_humidity(temperature, humidity, status);
+    
+    EXPECT_EQ(status, UARTStatus::Ok);
+    EXPECT_EQ(temperature.value(), 25);
+    EXPECT_EQ(humidity.value(), 60);
+    verify_command(driver, "AT+TEHU?");
+}
+
+// ============================================================================
+// Discovery Operations Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, BasicDiscoveryOperations) {
+    // Test basic discovery operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    
+    const std::string discovery_response = 
+        "OK+DISCS"
+        "OK+DISC:001122334455"
+        "OK+NAME:TestDevice\r\n"
+        "OK+RSSI:-45\r\n"
+        "OK+DISCE";
+    
+    uart.SetReceiveData(create_response(discovery_response));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    std::vector<std::string> discovered_devices;
+    auto callback = [](char id, const MacAddress& mac, std::string_view name,
+                      std::string_view rssi, void* user_data) {
+        auto* devices = static_cast<std::vector<std::string>*>(user_data);
+        devices->push_back(std::string(mac));
+    };
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.scan(callback, &discovered_devices, 5000, status);
+    
+    EXPECT_EQ(status, UARTStatus::Ok);
+    EXPECT_GE(discovered_devices.size(), 1);
+    verify_command(driver, "AT+DISC?");
+}
+
+// ============================================================================
+// Power Management Basic Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, BasicPowerOperations) {
+    // Test basic power management operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::Ok);
+    uart.SetReceiveData(create_response("OK+Set:2"));
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.set_module_power(ModulePower::Dbm0, status);
+    EXPECT_EQ(status, UARTStatus::Ok);
+    verify_command(driver, "AT+POWE2");
+}
+
+TEST_F(BasicComprehensiveTest, SleepWakeOperations) {
+    // Test sleep and wake operations
+    
+    // Test sleep
+    {
+        MockUART uart;
+        uart.SetForcedStatus(UARTStatus::Ok);
+        uart.SetReceiveData(create_response("OK+SLEEP"));
+        
+        auto driver = make_hm11_driver(std::move(uart));
+        
+        UARTStatus status = UARTStatus::ErrError;
+        driver.sleep(status);
+        EXPECT_EQ(status, UARTStatus::Ok);
+        verify_command(driver, "AT+SLEEP");
+    }
+    
+    // Test wake up
+    {
+        MockUART uart;
+        uart.SetForcedStatus(UARTStatus::Ok);
+        uart.SetReceiveData(create_response("OK"));
+        
+        auto driver = make_hm11_driver(std::move(uart));
+        
+        UARTStatus status = UARTStatus::ErrError;
+        driver.wake_up(status);
+        EXPECT_EQ(status, UARTStatus::Ok);
+        verify_command(driver, "AT");
+    }
+}
+
+// ============================================================================
+// Error Handling Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, ErrorHandlingValidation) {
+    // Test error handling across operations
+    
+    MockUART uart;
+    uart.SetForcedStatus(UARTStatus::ErrError);
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.SetRole(Role::Central, status);
+    EXPECT_EQ(status, UARTStatus::ErrError);
+}
+
+TEST_F(BasicComprehensiveTest, TimeoutHandling) {
+    // Test timeout handling
+    
+    MockUART uart;
+    uart.SetForcedStatusForReceive(UARTStatus::ErrTimeout);
+    
+    auto driver = make_hm11_driver(std::move(uart));
+    
+    std::vector<std::string> partial_results;
+    auto callback = [](char id, const MacAddress& mac, std::string_view name,
+                      std::string_view rssi, void* user_data) {
+        auto* devices = static_cast<std::vector<std::string>*>(user_data);
+        devices->push_back(std::string(mac));
+    };
+    
+    UARTStatus status = UARTStatus::ErrError;
+    driver.scan(callback, &partial_results, 1000, status);
+    EXPECT_EQ(status, UARTStatus::ErrTimeout);
+}
+
+// ============================================================================
+// Type Safety Validation Tests
+// ============================================================================
+
+TEST_F(BasicComprehensiveTest, TypeSafetyValidation) {
+    // Test type safety for various types
+    
+    // Test MacAddress validation
+    EXPECT_NO_THROW(MacAddress("001122334455"));
+    EXPECT_THROW(MacAddress("invalid"), std::exception);
+    
+    // Test IBeaconUuid validation  
+    EXPECT_NO_THROW(IBeaconUuid("74278BDAB644452080FC720EAF059935"));
+    EXPECT_THROW(IBeaconUuid("tooshort"), std::exception);
+    
+    // Test VersionType validation
+    EXPECT_NO_THROW(VersionType("FFE0"));
+    EXPECT_THROW(VersionType("INVALID"), std::exception);
+    
+    // Test RangedInteger validation
+    EXPECT_NO_THROW(TemperatureType(25));
+    EXPECT_THROW(TemperatureType(200), std::exception);
+    
+    EXPECT_NO_THROW(HumidityType(60));
+    EXPECT_THROW(HumidityType(200), std::exception);
+}

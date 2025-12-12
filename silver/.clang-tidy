@@ -1,0 +1,111 @@
+
+---
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-narrowing-conversions,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  -performance-avoid-endl,
+  -performance-inefficient-vector-operation,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-naming,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-use-default-member-init,
+  -modernize-use-default-member-init,
+  -cppcoreguidelines-prefer-member-initializer,
+  -modernize-use-designated-initializers,
+  -clang-analyzer-optin.performance.Padding
+
+CheckOptions:
+  # Key principles: descriptive names, underscores for word separation,
+  # avoid type encoding, meaningful constant names
+
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # Types: CamelCase (standard C++ practice)
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+
+  # Functions: lower_case (to match existing HM11 codebase style)
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.MethodCase
+    value: lower_case
+
+  # Variables and Parameters: lower_case with trailing underscore for members
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+
+  # Constants: lower_case for local constants, UPPER_CASE for globals/statics
+  # Using lower_case for local constants to match existing codebase style
+  - key: readability-identifier-naming.ConstantCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.StaticConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: lower_case
+
+  # Enum Constants: CamelCase (modern C++11+ enum class style)
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+
+  # Special member functions
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: true
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+
+  # Performance
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: false
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: 'std::shared_ptr;std::unique_ptr'
+
+  # Readability (retained from hm11-dst for continuity)
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 25
+  - key: readability-function-size.LineThreshold
+    value: 250
+
+  # Modernize
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*(include|src|examples|tests)/.*'
+FormatStyle: file

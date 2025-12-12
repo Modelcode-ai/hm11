@@ -1,0 +1,95 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+
+# Conan generated files and cache
+conanfile.txt.user
+conaninfo.txt
+conanbuildinfo.*
+graph_info.json
+CMakeUserPresets.json
+.conan/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+compile_commands.json
+
+# Object files and libraries
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+hm11_driver
+hm11_tests
+
+# IDE and editor files
+.vscode/
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiler and debugger output
+*.log
+*.stackdump
+*.gch
+*.pch
+
+# Testing output
+Testing/
+CTestTestfile.cmake
+
+# Sanitizer and profiling output
+*.profdata
+*.profraw
+*.gcda
+*.gcno
+*.gcov
+
+# Documentation build output
+docs/_build/
+docs/html/
+docs/latex/
+
+# Package manager files (keep conanfile.py)
+*.egg-info/
+pip-log.txt
+
+# Backup and temporary files
+*.bak
+*.tmp
+*.temp
+
+# Vendor directory for third-party dependencies (CMSIS, etc.)
+# These should be documented in README but not committed
+vendor/
+
+# STM32-specific build artifacts
+*.elf
+*.hex
+*.bin
+*.map
+*.list
+
+# SonarQube analysis files
+.scannerwork/
+.sonar/
+sonar-reports/

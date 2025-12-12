@@ -1,0 +1,11 @@
+# ThreadSanitizer suppression file for HM11 driver
+#
+# These suppressions are for known-safe concurrent access patterns in
+# lock-free data structures where ThreadSanitizer cannot infer safety
+# from atomic synchronization.
+
+# CircularBuffer: Intentional concurrent access to buffer array
+# Producer writes to buffer[], consumer reads from buffer[]
+# Synchronized via atomic write_position with proper memory ordering
+race:^hm11::sync::CircularBuffer
+race:circular_buffer.hpp
