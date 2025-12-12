@@ -265,7 +265,7 @@ class HM11Driver {
      * @param timeout_ms Timeout in milliseconds for the discovery operation.
      * @return true if status is Ok.
      */
-    bool find_all_services_uuid(std::function<void(const std::string& service_info)> callback,
+    bool find_all_services_uuid(const std::function<void(const std::string& service_info)>& callback,
                                 Status& status,
                                 std::uint32_t timeout_ms = 5000);
 
@@ -280,7 +280,7 @@ class HM11Driver {
      * @param timeout_ms Timeout in milliseconds for the discovery operation.
      * @return true if status is Ok.
      */
-    bool find_all_characteristic_uuid(std::function<void(const std::string& characteristic_info)> callback,
+    bool find_all_characteristic_uuid(const std::function<void(const std::string& characteristic_info)>& callback,
                                       Status& status,
                                       std::uint32_t timeout_ms = 5000);
 
@@ -299,7 +299,7 @@ class HM11Driver {
      */
     bool find_characteristic_uuid(const util::HandleType& from,
                                   const util::HandleType& to,
-                                  std::function<void(const std::string& characteristic_info)> callback,
+                                  const std::function<void(const std::string& characteristic_info)>& callback,
                                   Status& status,
                                   std::uint32_t timeout_ms = 5000);
 
@@ -483,7 +483,7 @@ class HM11Driver {
      * @param timeout_ms Timeout in milliseconds for the scan operation.
      * @return true if status is Ok.
      */
-    bool scan_ibeacon(std::function<void(const std::string& device_data)> callback,
+    bool scan_ibeacon(const std::function<void(const std::string& device_data)>& callback,
                       Status& status,
                       std::uint32_t timeout_ms = 5000);
 

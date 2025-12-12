@@ -45,8 +45,9 @@ bool HM11Driver::get_white_list_mac_address(util::MacWhiteListIndex index, util:
         return false;
     }
     // Copy MAC address from response
-    std::string_view mac_view(reinterpret_cast<const char*>(response_buffer.data() + expected.size()), 12);
-    mac = util::MACAddress(mac_view);
+    std::string mac_str(12, '\0');
+    std::memcpy(mac_str.data(), response_buffer.data() + expected.size(), 12);
+    mac = util::MACAddress(mac_str);
     return true;
 }
 

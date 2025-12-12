@@ -85,12 +85,14 @@ bool HM11Driver::get_module_name(std::string& name, Status& status) {
     std::size_t start = expected.size();
     std::size_t end = start;
     while (end < response_buffer.size() &&
-           response_buffer[end] != '\r' &&
-           response_buffer[end] != '\n' &&
-           response_buffer[end] != '\0') {
+           response_buffer.at(end) != '\r' &&
+           response_buffer.at(end) != '\n' &&
+           response_buffer.at(end) != '\0') {
         ++end;
     }
-    name = std::string(reinterpret_cast<const char*>(response_buffer.data() + start), end - start);
+    std::string name_str(end - start, '\0');
+    std::memcpy(name_str.data(), response_buffer.data() + start, end - start);
+    name = name_str;
     return true;
 }
 
@@ -173,7 +175,7 @@ bool HM11Driver::get_pio_output_status(util::PioNumber pio, PIOOutput& output, S
         return false;
     }
 
-    int value = response_buffer[expected.size()] - '0';
+    int value = response_buffer.at(expected.size()) - '0';
     output = static_cast<PIOOutput>(value);
     return true;
 }
@@ -185,8 +187,9 @@ bool HM11Driver::get_pios_output_status(util::PIONumbers& pios, Status& status) 
         return false;
     }
     // Copy 3 hex characters from response
-    std::string_view pios_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 3);
-    pios = util::PIONumbers(pios_view);
+    std::string pios_str(3, '\0');
+    std::memcpy(pios_str.data(), response_buffer.data() + OK_GET.size(), 3);
+    pios = util::PIONumbers(pios_str);
     return true;
 }
 
@@ -213,8 +216,9 @@ bool HM11Driver::get_pio_collection_rate(util::PioCollectionRate& rate, Status& 
         return false;
     }
     // Parse 2 digit characters from response
-    std::string_view rate_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 2);
-    int value = std::stoi(std::string(rate_view));
+    std::string rate_str(2, '\0');
+    std::memcpy(rate_str.data(), response_buffer.data() + OK_GET.size(), 2);
+    int value = std::stoi(rate_str);
     rate = util::PioCollectionRate(static_cast<std::uint8_t>(value));
     return true;
 }
@@ -233,8 +237,9 @@ bool HM11Driver::get_power_pin_output(util::PIONumbers& pios, Status& status) {
         return false;
     }
     // Copy 3 hex characters from response
-    std::string_view pios_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 3);
-    pios = util::PIONumbers(pios_view);
+    std::string pios_str(3, '\0');
+    std::memcpy(pios_str.data(), response_buffer.data() + OK_GET.size(), 3);
+    pios = util::PIONumbers(pios_str);
     return true;
 }
 
@@ -252,8 +257,9 @@ bool HM11Driver::get_connect_pin_output(util::PIONumbers& pios, Status& status) 
         return false;
     }
     // Copy 3 hex characters from response
-    std::string_view pios_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 3);
-    pios = util::PIONumbers(pios_view);
+    std::string pios_str(3, '\0');
+    std::memcpy(pios_str.data(), response_buffer.data() + OK_GET.size(), 3);
+    pios = util::PIONumbers(pios_str);
     return true;
 }
 
@@ -293,8 +299,9 @@ bool HM11Driver::get_pin_code(util::PINType& pin, Status& status) {
         return false;
     }
     // Copy 6 digit characters from response
-    std::string_view pin_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 6);
-    pin = util::PINType(pin_view);
+    std::string pin_str(6, '\0');
+    std::memcpy(pin_str.data(), response_buffer.data() + OK_GET.size(), 6);
+    pin = util::PINType(pin_str);
     return true;
 }
 

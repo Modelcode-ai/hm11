@@ -1,9 +1,12 @@
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <functional>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include "hm11/ATCommandBuilder.hpp"
 #include "hm11/driver.hpp"
@@ -44,7 +47,7 @@ bool HM11Driver::connect(MACAddressType mac_type, const util::MACAddress& addres
     result = ConnectResult::OtherError;
 
     // Build MAC type string ("N", "S", "T", "R")
-    char type_char;
+    char type_char = 0;
     switch (mac_type) {
         case MACAddressType::NormalAddress:    type_char = 'N'; break;
         case MACAddressType::StaticMAC:        type_char = 'S'; break;
@@ -64,7 +67,7 @@ bool HM11Driver::connect(MACAddressType mac_type, const util::MACAddress& addres
     }
 
     // Parse connect result from response
-    char c = static_cast<char>(response_buffer[expected.size()]);
+    char c = static_cast<char>(response_buffer.at(expected.size()));
     switch (c) {
         case '0': result = ConnectResult::Connecting; break;
         case '1': result = ConnectResult::Connected; break;
@@ -106,8 +109,9 @@ bool HM11Driver::get_last_connected_device_address(util::MACAddress& mac, Status
         return false;
     }
     // Copy MAC address from response (12 hex characters after OK+RADD:)
-    std::string_view mac_view(reinterpret_cast<const char*>(response_buffer.data() + expected.size()), 12);
-    mac = util::MACAddress(mac_view);
+    std::string mac_str(12, '\0');
+    std::memcpy(mac_str.data(), response_buffer.data() + expected.size(), 12);
+    mac = util::MACAddress(mac_str);
     return true;
 }
 
@@ -146,8 +150,9 @@ bool HM11Driver::get_connect_remote_device_timeout(util::ConnectTimeout& timeout
         return false;
     }
     // Copy timeout from response (6 digit characters after OK+GET:)
-    std::string_view timeout_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 6);
-    timeout = util::ConnectTimeout(timeout_view);
+    std::string timeout_str(6, '\0');
+    std::memcpy(timeout_str.data(), response_buffer.data() + OK_GET.size(), 6);
+    timeout = util::ConnectTimeout(timeout_str);
     return true;
 }
 
@@ -211,10 +216,11 @@ bool HM11Driver::enable_characteristic_notify(const util::HandleType& handle,
     }
 
     // Check response
-    std::string_view resp_view(reinterpret_cast<const char*>(response_buffer.data()), 10);
-    if (resp_view.substr(0, 10) == "OK+SEND-OK") {
+    std::string resp_str(10, '\0');
+    std::memcpy(resp_str.data(), response_buffer.data(), std::min(static_cast<std::size_t>(10), response_buffer.size()));
+    if (resp_str.starts_with("OK+SEND-OK")) {
         response = NotifyResponse::SendOk;
-    } else if (resp_view.substr(0, 10) == "OK+DATA-ER") {
+    } else if (resp_str.starts_with("OK+DATA-ER")) {
         response = NotifyResponse::DataEr;
     } else {
         response = NotifyResponse::DataEr;
@@ -242,10 +248,11 @@ bool HM11Driver::disable_characteristic_notify(const util::HandleType& handle,
     }
 
     // Check response
-    std::string_view resp_view(reinterpret_cast<const char*>(response_buffer.data()), 10);
-    if (resp_view.substr(0, 10) == "OK+SEND-OK") {
+    std::string resp_str(10, '\0');
+    std::memcpy(resp_str.data(), response_buffer.data(), std::min(static_cast<std::size_t>(10), response_buffer.size()));
+    if (resp_str.starts_with("OK+SEND-OK")) {
         response = NotifyResponse::SendOk;
-    } else if (resp_view.substr(0, 10) == "OK+DATA-ER") {
+    } else if (resp_str.starts_with("OK+DATA-ER")) {
         response = NotifyResponse::DataEr;
     } else {
         response = NotifyResponse::DataEr;
@@ -273,10 +280,11 @@ bool HM11Driver::read_characteristic_notify(const util::HandleType& handle,
     }
 
     // Check response
-    std::string_view resp_view(reinterpret_cast<const char*>(response_buffer.data()), 10);
-    if (resp_view.substr(0, 10) == "OK+SEND-OK") {
+    std::string resp_str(10, '\0');
+    std::memcpy(resp_str.data(), response_buffer.data(), std::min(static_cast<std::size_t>(10), response_buffer.size()));
+    if (resp_str.starts_with("OK+SEND-OK")) {
         response = NotifyResponse::SendOk;
-    } else if (resp_view.substr(0, 10) == "OK+DATA-ER") {
+    } else if (resp_str.starts_with("OK+DATA-ER")) {
         response = NotifyResponse::DataEr;
     } else {
         response = NotifyResponse::DataEr;
@@ -324,8 +332,9 @@ bool HM11Driver::get_characteristic(util::CharacteristicType& result, Status& st
         return false;
     }
     // Copy characteristic from response (4 hex characters after OK+GET:0x)
-    std::string_view char_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size() + 2), 4);
-    result = util::CharacteristicType(char_view);
+    std::string char_str(4, '\0');
+    std::memcpy(char_str.data(), response_buffer.data() + OK_GET.size() + 2, 4);
+    result = util::CharacteristicType(char_str);
     return true;
 }
 
@@ -346,15 +355,16 @@ bool HM11Driver::get_service_uuid(util::UUID& result, Status& status) {
         return false;
     }
     // Copy UUID from response (4 hex characters after OK+GET:0x)
-    std::string_view uuid_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size() + 2), 4);
-    result = util::UUID(uuid_view);
+    std::string uuid_str(4, '\0');
+    std::memcpy(uuid_str.data(), response_buffer.data() + OK_GET.size() + 2, 4);
+    result = util::UUID(uuid_str);
     return true;
 }
 
 // ========== GATT Discovery Methods ==========
 
 bool HM11Driver::find_all_services_uuid(
-    std::function<void(const std::string& service_info)> callback,
+    const std::function<void(const std::string& service_info)>& callback,
     Status& status,
     std::uint32_t timeout_ms) {
 
@@ -379,7 +389,7 @@ bool HM11Driver::find_all_services_uuid(
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time).count();
 
-        if (static_cast<std::uint32_t>(elapsed) > timeout_ms) {
+        if (std::cmp_greater(elapsed, timeout_ms)) {
             status = Status::Timeout;
             return false;
         }
@@ -436,7 +446,7 @@ bool HM11Driver::find_all_services_uuid(
 }
 
 bool HM11Driver::find_all_characteristic_uuid(
-    std::function<void(const std::string& characteristic_info)> callback,
+    const std::function<void(const std::string& characteristic_info)>& callback,
     Status& status,
     std::uint32_t timeout_ms) {
 
@@ -461,7 +471,7 @@ bool HM11Driver::find_all_characteristic_uuid(
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time).count();
 
-        if (static_cast<std::uint32_t>(elapsed) > timeout_ms) {
+        if (std::cmp_greater(elapsed, timeout_ms)) {
             status = Status::Timeout;
             return false;
         }
@@ -520,7 +530,7 @@ bool HM11Driver::find_all_characteristic_uuid(
 bool HM11Driver::find_characteristic_uuid(
     const util::HandleType& from,
     const util::HandleType& to,
-    std::function<void(const std::string& characteristic_info)> callback,
+    const std::function<void(const std::string& characteristic_info)>& callback,
     Status& status,
     std::uint32_t timeout_ms) {
 
@@ -547,7 +557,7 @@ bool HM11Driver::find_characteristic_uuid(
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time).count();
 
-        if (static_cast<std::uint32_t>(elapsed) > timeout_ms) {
+        if (std::cmp_greater(elapsed, timeout_ms)) {
             status = Status::Timeout;
             return false;
         }
@@ -615,10 +625,10 @@ bool HM11Driver::send_data_to_characteristic(
 
     // Convert data to hex string
     std::string data_hex;
-    for (const auto byte : data) {
-        char hex[3];
-        std::snprintf(hex, sizeof(hex), "%02X", byte);
-        data_hex += hex;
+    constexpr std::array<char, 16> HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    for (const auto BYTE : data) {
+        data_hex += HEX_CHARS.at((BYTE >> 4) & 0xF);
+        data_hex += HEX_CHARS.at(BYTE & 0xF);
     }
 
     std::string cmd = ATCommandBuilder::build(AtCommand::SendDataToCharacteristic,
@@ -635,14 +645,14 @@ bool HM11Driver::send_data_to_characteristic(
     }
 
     // Check response
-    std::string_view resp_view(reinterpret_cast<const char*>(response_buffer.data()), 10);
-    if (resp_view.substr(0, 10) == "OK+SEND-OK") {
+    std::string resp_str(10, '\0');
+    std::memcpy(resp_str.data(), response_buffer.data(), std::min(static_cast<std::size_t>(10), response_buffer.size()));
+    if (resp_str.starts_with("OK+SEND-OK")) {
         status = Status::Ok;
         return true;
-    } else {
-        status = Status::InvalidResponse;
-        return false;
     }
+    status = Status::InvalidResponse;
+    return false;
 }
 
 // ========== Power Methods ==========
