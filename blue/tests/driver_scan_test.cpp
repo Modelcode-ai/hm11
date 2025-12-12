@@ -15,8 +15,8 @@ struct ScannedDevice {
     std::string name;
     std::string rssi;
 
-    ScannedDevice(const std::array<char, 12>& m, const std::string& n, const std::string& r)
-        : mac(m), name(n), rssi(r) {}
+    ScannedDevice(const std::array<char, 12>& m, std::string n, std::string r)
+        : mac(m), name(std::move(n)), rssi(std::move(r)) {}
 };
 
 // ========== Scan Tests ==========
@@ -250,9 +250,9 @@ TEST(HM11DriverScanTest, ScanCallbackInvocation) {
 
     // Track callback invocation order
     std::vector<std::string> invocation_order;
-    auto callback = [&invocation_order](const std::array<char, 12>& mac,
+    auto callback = [&invocation_order]([[maybe_unused]] const std::array<char, 12>& mac,
                                         const std::string& name,
-                                        const std::string& rssi) {
+                                        [[maybe_unused]] const std::string& rssi) {
         invocation_order.push_back(name);
     };
 

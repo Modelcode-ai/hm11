@@ -81,7 +81,7 @@ TEST(HM11DriverModuleConfigTest, SetNotifyMode_WithoutAddress) {
     uart.set_next_receive(OK_SET + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_notify_mode(NotifyMode::Without_Address, status));
+    EXPECT_TRUE(driver.set_notify_mode(NotifyMode::WithoutAddress, status));
     EXPECT_EQ(uart.get_transmitted_data(), "AT+NOTP0\r\n");
 }
 
@@ -98,7 +98,7 @@ TEST(HM11DriverModuleConfigTest, GetNotifyMode) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "1\r\n");
     HM11Driver driver(uart);
-    NotifyMode mode = NotifyMode::Without_Address;
+    NotifyMode mode = NotifyMode::WithoutAddress;
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_notify_mode(mode, status));
     EXPECT_EQ(mode, NotifyMode::WithAddress);

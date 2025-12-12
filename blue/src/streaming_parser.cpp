@@ -15,26 +15,28 @@ static constexpr std::string_view CRLF = "\r\n";
 static constexpr std::size_t MAC_LENGTH = 12;
 
 StreamingParser::StreamingParser(DiscoveredCallback callback, void* user_data)
-    : callback_(callback), user_data_(user_data), current_device_{}, state_(State::Selection), buffer_{} {
-    buffer_.reserve(512);  // Reserve some space to avoid reallocations
+    : m_callback(callback), m_user_data(user_data) {
+    m_buffer.reserve(512);  // Reserve some space to avoid reallocations
 }
 
 bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
-    // Append new data to buffer
-    buffer_.append(reinterpret_cast<const char*>(data), size);
+    // Append new data to m_buffer
+    for (std::size_t i = 0; i < size; ++i) {
+        m_buffer.push_back(static_cast<char>(data[i]));
+    }
 
-    while (!buffer_.empty() && state_ != State::Complete) {
-        switch (state_) {
+    while (!m_buffer.empty() && m_state != State::Complete) {
+        switch (m_state) {
             case State::Selection: {
                 // Need at least 8 chars for shortest prefix
-                if (buffer_.size() < 8) {
+                if (m_buffer.size() < 8) {
                     return false;
                 }
 
                 // Check for scan end
                 if (starts_with(OK_DISCE)) {
                     invoke_callback();  // Flush last device if any
-                    state_ = State::Complete;
+                    m_state = State::Complete;
                     consume(OK_DISCE.size());
                     return true;
                 }
@@ -47,24 +49,24 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
 
                 // Check for MAC address
                 if (starts_with(OK_DISC)) {
-                    // Before reading new MAC, call callback with previous device
+                    // Before reading new MAC, call m_callback with previous device
                     invoke_callback();
                     consume(OK_DISC.size());
-                    state_ = State::MAC;
+                    m_state = State::MAC;
                     continue;
                 }
 
                 // Check for device name
                 if (starts_with(OK_NAME)) {
                     consume(OK_NAME.size());
-                    state_ = State::Name;
+                    m_state = State::Name;
                     continue;
                 }
 
                 // Check for RSSI
                 if (starts_with(OK_RSSI)) {
                     consume(OK_RSSI.size());
-                    state_ = State::RSSI;
+                    m_state = State::RSSI;
                     continue;
                 }
 
@@ -75,14 +77,14 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
 
             case State::MAC: {
                 // Need 12 characters for MAC address
-                if (buffer_.size() < MAC_LENGTH) {
+                if (m_buffer.size() < MAC_LENGTH) {
                     return false;
                 }
 
                 // Read MAC address
-                std::copy_n(buffer_.begin(), MAC_LENGTH, current_device_.mac.begin());
+                std::copy_n(m_buffer.begin(), MAC_LENGTH, m_current_device.mac.begin());
                 consume(MAC_LENGTH);
-                state_ = State::Selection;
+                m_state = State::Selection;
                 break;
             }
 
@@ -91,15 +93,15 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
                 std::size_t pos = find(CRLF);
                 if (pos == std::string::npos) {
                     // No terminator yet, accumulate all data
-                    current_device_.name += buffer_;
-                    buffer_.clear();
+                    m_current_device.name += m_buffer;
+                    m_buffer.clear();
                     return false;
                 }
 
                 // Found terminator, extract name
-                current_device_.name += buffer_.substr(0, pos);
+                m_current_device.name += m_buffer.substr(0, pos);
                 consume(pos + CRLF.size());
-                state_ = State::Selection;
+                m_state = State::Selection;
                 break;
             }
 
@@ -108,15 +110,15 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
                 std::size_t pos = find(CRLF);
                 if (pos == std::string::npos) {
                     // No terminator yet, accumulate all data
-                    current_device_.rssi += buffer_;
-                    buffer_.clear();
+                    m_current_device.rssi += m_buffer;
+                    m_buffer.clear();
                     return false;
                 }
 
                 // Found terminator, extract RSSI
-                current_device_.rssi += buffer_.substr(0, pos);
+                m_current_device.rssi += m_buffer.substr(0, pos);
                 consume(pos + CRLF.size());
-                state_ = State::Selection;
+                m_state = State::Selection;
                 break;
             }
 
@@ -126,13 +128,13 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
         }
     }
 
-    return state_ == State::Complete;
+    return m_state == State::Complete;
 }
 
 void StreamingParser::reset() {
-    state_ = State::Selection;
-    current_device_.clear();
-    buffer_.clear();
+    m_state = State::Selection;
+    m_current_device.clear();
+    m_buffer.clear();
 }
 
 void StreamingParser::flush() {
@@ -140,28 +142,28 @@ void StreamingParser::flush() {
 }
 
 bool StreamingParser::starts_with(std::string_view prefix) const {
-    if (buffer_.size() < prefix.size()) {
+    if (m_buffer.size() < prefix.size()) {
         return false;
     }
-    return buffer_.compare(0, prefix.size(), prefix) == 0;
+    return m_buffer.starts_with(prefix);
 }
 
 void StreamingParser::consume(std::size_t count) {
-    if (count >= buffer_.size()) {
-        buffer_.clear();
+    if (count >= m_buffer.size()) {
+        m_buffer.clear();
     } else {
-        buffer_.erase(0, count);
+        m_buffer.erase(0, count);
     }
 }
 
 std::size_t StreamingParser::find(std::string_view needle) const {
-    return buffer_.find(needle);
+    return m_buffer.find(needle);
 }
 
 void StreamingParser::invoke_callback() {
-    if (current_device_.has_mac() && callback_) {
-        callback_(current_device_, user_data_);
-        current_device_.clear();
+    if (m_current_device.has_mac() && m_callback != nullptr) {
+        m_callback(m_current_device, m_user_data);
+        m_current_device.clear();
     }
 }
 

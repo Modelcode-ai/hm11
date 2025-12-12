@@ -216,16 +216,13 @@ constexpr const char* command_base(AtCommand cmd) noexcept {
             return "AT+RELI";
         case AtCommand::GetReliableAdvertising:
             return "AT+RELI?";
-        // White List
         case AtCommand::SetWhiteListSwitch:
             return "AT+ALLO";
         case AtCommand::GetWhiteListSwitch:
             return "AT+ALLO?";
         case AtCommand::SetWhiteListMAC:
-            return "AT+AD";
         case AtCommand::GetWhiteListMAC:
             return "AT+AD";
-        // Battery
         case AtCommand::SetBatteryMonitor:
             return "AT+BATC";
         case AtCommand::GetBatteryMonitor:
@@ -358,7 +355,6 @@ constexpr const char* command_base(AtCommand cmd) noexcept {
             return "AT+GAIN?";
         // PIO Control
         case AtCommand::SetPIOOutputStatus:
-            return "AT+PIO";
         case AtCommand::GetPIOOutputStatus:
             return "AT+PIO";
         case AtCommand::GetPIOsOutputStatus:
@@ -388,19 +384,16 @@ constexpr const char* command_base(AtCommand cmd) noexcept {
             return "AT+PASS?";
         case AtCommand::RemoveBondInformation:
             return "AT+ERASE";
-        // iBeacon Query
         case AtCommand::GetiBeaconMajor:
             return "AT+MARJ?";
         case AtCommand::GetiBeaconMinor:
             return "AT+MINO?";
         case AtCommand::GetiBeaconMeasuredPower:
             return "AT+MEAS?";
-        // Power Management
         case AtCommand::SetModuleAutoSleep:
             return "AT+PWRM";
         case AtCommand::GetModuleAutoSleep:
             return "AT+PWRM?";
-        // HMSensor
         case AtCommand::GetModuleTemperature:
             return "AT+TEMP?";
         // Discovery

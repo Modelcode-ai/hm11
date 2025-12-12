@@ -205,7 +205,7 @@ TEST(HM11DriverConfigTest, SetMinimumLinkLayerConnectionInterval) {
     uart.set_next_receive(OK_SET + "3\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_minimum_link_layer_connection_interval(LinkLayerConnectionInterval::ms20, status));
+    EXPECT_TRUE(driver.set_minimum_link_layer_connection_interval(LinkLayerConnectionInterval::Ms20, status));
     EXPECT_EQ(uart.get_transmitted_data(), "AT+COMI3\r\n");
 }
 
@@ -213,10 +213,10 @@ TEST(HM11DriverConfigTest, GetMinimumLinkLayerConnectionInterval) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "2\r\n");
     HM11Driver driver(uart);
-    LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::ms7;
+    LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::Ms7;
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_minimum_link_layer_connection_interval(interval, status));
-    EXPECT_EQ(interval, LinkLayerConnectionInterval::ms15);
+    EXPECT_EQ(interval, LinkLayerConnectionInterval::Ms15);
 }
 
 TEST(HM11DriverConfigTest, SetMaximumLinkLayerConnectionInterval) {
@@ -224,7 +224,7 @@ TEST(HM11DriverConfigTest, SetMaximumLinkLayerConnectionInterval) {
     uart.set_next_receive(OK_SET + "5\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_maximum_link_layer_connection_interval(LinkLayerConnectionInterval::ms30, status));
+    EXPECT_TRUE(driver.set_maximum_link_layer_connection_interval(LinkLayerConnectionInterval::Ms30, status));
     EXPECT_EQ(uart.get_transmitted_data(), "AT+COMA5\r\n");
 }
 
@@ -232,10 +232,10 @@ TEST(HM11DriverConfigTest, GetMaximumLinkLayerConnectionInterval) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "4\r\n");
     HM11Driver driver(uart);
-    LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::ms7;
+    LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::Ms7;
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_maximum_link_layer_connection_interval(interval, status));
-    EXPECT_EQ(interval, LinkLayerConnectionInterval::ms25);
+    EXPECT_EQ(interval, LinkLayerConnectionInterval::Ms25);
 }
 
 TEST(HM11DriverConfigTest, SetSlaveLatency) {
@@ -263,7 +263,7 @@ TEST(HM11DriverConfigTest, SetConnectionSupervisionTimeout) {
     uart.set_next_receive(OK_SET + "5\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_connection_supervision_timeout(ConnectionSupervisionTimeout::ms5000, status));
+    EXPECT_TRUE(driver.set_connection_supervision_timeout(ConnectionSupervisionTimeout::Ms5000, status));
     EXPECT_EQ(uart.get_transmitted_data(), "AT+COSU5\r\n");
 }
 
@@ -271,10 +271,10 @@ TEST(HM11DriverConfigTest, GetConnectionSupervisionTimeout) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "3\r\n");
     HM11Driver driver(uart);
-    ConnectionSupervisionTimeout timeout = ConnectionSupervisionTimeout::ms100;
+    ConnectionSupervisionTimeout timeout = ConnectionSupervisionTimeout::Ms100;
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_connection_supervision_timeout(timeout, status));
-    EXPECT_EQ(timeout, ConnectionSupervisionTimeout::ms3000);
+    EXPECT_EQ(timeout, ConnectionSupervisionTimeout::Ms3000);
 }
 
 TEST(HM11DriverConfigTest, SetUpdateConnection_Enable) {

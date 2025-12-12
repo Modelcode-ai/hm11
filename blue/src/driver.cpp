@@ -38,15 +38,16 @@ bool HM11Driver::receive(std::string& out, Status& status, std::size_t max_len) 
     // Find actual data length by scanning until null byte
     // (HM-11 responses are ASCII, so null marks end of data)
     std::size_t data_len = 0;
-    for (std::size_t i = 0; i < buffer.size(); ++i) {
-        if (buffer[i] == 0) {
+    for (unsigned char byte : buffer) {
+        if (byte == 0) {
             break;
         }
         data_len++;
     }
 
     // Convert buffer to string
-    out.assign(reinterpret_cast<const char*>(buffer.data()), data_len);
+    out.resize(data_len);
+    std::memcpy(out.data(), buffer.data(), data_len);
     return true;
 }
 
@@ -97,14 +98,14 @@ bool HM11Driver::get_role(unsigned int& role, Status& status) {
 }
 
 bool HM11Driver::get_mac_address(std::array<char, 12>& mac_address, Status& status) {
-    const std::string expect = "OK+ADDR:";
-    transmit_and_check("AT+ADDR?", expect, response_buffer, status);
+    const std::string EXPECT = "OK+ADDR:";
+    transmit_and_check("AT+ADDR?", EXPECT, response_buffer, status);
     if (status != Status::Ok) {
         return false;
     }
 
     // Copy MAC address from response (OK+ADDR:<12 hex chars>)
-    std::copy_n(response_buffer.begin() + expect.size(), 12, mac_address.begin());
+    std::copy_n(response_buffer.begin() + EXPECT.size(), 12, mac_address.begin());
     return true;
 }
 
@@ -135,8 +136,8 @@ bool HM11Driver::sleep(Status& status) {
 
 bool HM11Driver::wake_up(Status& status) {
     // Wake up command is 7 'W' characters
-    const std::string cmd(7, 'W');
-    transmit_and_check(cmd, "OK+WAKE", status);
+    const std::string CMD(7, 'W');
+    transmit_and_check(CMD, "OK+WAKE", status);
     return status == Status::Ok;
 }
 

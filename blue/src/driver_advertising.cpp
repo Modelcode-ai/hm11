@@ -9,11 +9,11 @@ namespace hm11 {
 
 bool HM11Driver::set_advertising_interval(AdvertisingInterval interval, Status& status) {
     // Convert enum to character ('0'-'9', 'A'-'F')
-    char c;
+    char c = 0;
     if (static_cast<int>(interval) <= 9) {
-        c = '0' + static_cast<char>(static_cast<int>(interval));
+        c = static_cast<char>('0' + static_cast<int>(interval));
     } else {
-        c = 'A' + static_cast<char>(static_cast<int>(interval) - 10);
+        c = static_cast<char>('A' + static_cast<int>(interval) - 10);
     }
     std::string cmd = ATCommandBuilder::build(AtCommand::SetAdvertisingInterval, {std::string(1, c)});
     std::string expected = OK_SET + std::string(1, c);
@@ -30,7 +30,7 @@ bool HM11Driver::get_advertising_interval(AdvertisingInterval& interval, Status&
 
     // Parse character response ('0'-'9', 'A'-'F')
     char c = static_cast<char>(response_buffer[OK_GET.size()]);
-    int value;
+    int value = 0;
     if (c >= '0' && c <= '9') {
         value = c - '0';
     } else if (c >= 'A' && c <= 'F') {

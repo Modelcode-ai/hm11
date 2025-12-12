@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <string>
 #include <thread>
+#include <utility>
 
 #include "hm11/ATCommandBuilder.hpp"
 #include "hm11/driver.hpp"
@@ -28,8 +30,9 @@ bool HM11Driver::get_ibeacon_major(util::VersionType& major, Status& status) {
     }
     // Response is OK+GET:0x followed by 4 hex characters
     std::size_t start = expected.size();
-    std::string_view major_view(reinterpret_cast<const char*>(response_buffer.data() + start), 4);
-    major = util::VersionType(major_view);
+    std::string major_str(4, '\0');
+    std::memcpy(major_str.data(), response_buffer.data() + start, 4);
+    major = util::VersionType(major_str);
     return true;
 }
 
@@ -42,8 +45,9 @@ bool HM11Driver::get_ibeacon_minor(util::VersionType& minor, Status& status) {
     }
     // Response is OK+GET:0x followed by 4 hex characters
     std::size_t start = expected.size();
-    std::string_view minor_view(reinterpret_cast<const char*>(response_buffer.data() + start), 4);
-    minor = util::VersionType(minor_view);
+    std::string minor_str(4, '\0');
+    std::memcpy(minor_str.data(), response_buffer.data() + start, 4);
+    minor = util::VersionType(minor_str);
     return true;
 }
 
@@ -56,8 +60,9 @@ bool HM11Driver::get_ibeacon_measured_power(util::MeasuredPower& power, Status& 
     }
     // Response is OK+GET:0x followed by 2 hex characters
     std::size_t start = expected.size();
-    std::string_view power_view(reinterpret_cast<const char*>(response_buffer.data() + start), 2);
-    power = util::MeasuredPower(power_view);
+    std::string power_str(2, '\0');
+    std::memcpy(power_str.data(), response_buffer.data() + start, 2);
+    power = util::MeasuredPower(power_str);
     return true;
 }
 
@@ -96,8 +101,9 @@ bool HM11Driver::get_module_temperature(util::InternalTemperatureType& temperatu
         return false;
     }
     // Response is OK+GET: followed by 7 digit characters
-    std::string_view temp_view(reinterpret_cast<const char*>(response_buffer.data() + OK_GET.size()), 7);
-    temperature = util::InternalTemperatureType(temp_view);
+    std::string temp_str(7, '\0');
+    std::memcpy(temp_str.data(), response_buffer.data() + OK_GET.size(), 7);
+    temperature = util::InternalTemperatureType(temp_str);
     return true;
 }
 
@@ -114,7 +120,7 @@ bool HM11Driver::scan(
 
         static void invoke(const DiscoveredDevice& device, void* user_data) {
             auto* adapter = static_cast<CallbackAdapter*>(user_data);
-            if (adapter && adapter->fn) {
+            if (adapter != nullptr && adapter->fn != nullptr) {
                 (*adapter->fn)(device.mac, device.name, device.rssi);
             }
         }
@@ -141,7 +147,7 @@ bool HM11Driver::scan(
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time).count();
 
-        if (static_cast<std::uint32_t>(elapsed) > timeout_ms) {
+        if (std::cmp_greater(elapsed, timeout_ms)) {
             status = Status::Timeout;
             parser.flush();  // Flush any pending device
             return false;
@@ -151,9 +157,8 @@ bool HM11Driver::scan(
         std::string received;
         if (receive(received, status, 512)) {
             // Parse the received data
-            scan_complete = parser.parse(
-                reinterpret_cast<const std::uint8_t*>(received.data()),
-                received.size());
+            std::vector<std::uint8_t> received_bytes(received.begin(), received.end());
+            scan_complete = parser.parse(received_bytes.data(), received_bytes.size());
 
             if (parser.is_complete()) {
                 status = Status::Ok;
@@ -176,7 +181,7 @@ bool HM11Driver::scan(
 }
 
 bool HM11Driver::scan_ibeacon(
-    std::function<void(const std::string& device_data)> callback,
+    const std::function<void(const std::string& device_data)>& callback,
     Status& status,
     std::uint32_t timeout_ms) {
 
@@ -204,7 +209,7 @@ bool HM11Driver::scan_ibeacon(
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time).count();
 
-        if (static_cast<std::uint32_t>(elapsed) > timeout_ms) {
+        if (std::cmp_greater(elapsed, timeout_ms)) {
             status = Status::Timeout;
             return false;
         }

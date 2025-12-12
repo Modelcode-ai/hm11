@@ -16,7 +16,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms100) {
     uart.set_next_receive(OK_SET + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::ms100, status));
+    EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::Ms100, status));
     EXPECT_EQ(status, Status::Ok);
     EXPECT_EQ(uart.get_transmitted_data(), "AT+ADVI0\r\n");
 }
@@ -26,7 +26,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms7000) {
     uart.set_next_receive(OK_SET + "F\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::ms7000, status));
+    EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::Ms7000, status));
     EXPECT_EQ(status, Status::Ok);
     EXPECT_EQ(uart.get_transmitted_data(), "AT+ADVIF\r\n");
 }
@@ -35,22 +35,22 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Numeric) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "5\r\n");
     HM11Driver driver(uart);
-    AdvertisingInterval interval;
+    AdvertisingInterval interval{};
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_advertising_interval(interval, status));
     EXPECT_EQ(status, Status::Ok);
-    EXPECT_EQ(interval, AdvertisingInterval::ms546);
+    EXPECT_EQ(interval, AdvertisingInterval::Ms546);
 }
 
 TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Hex) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "A\r\n");
     HM11Driver driver(uart);
-    AdvertisingInterval interval;
+    AdvertisingInterval interval{};
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_advertising_interval(interval, status));
     EXPECT_EQ(status, Status::Ok);
-    EXPECT_EQ(interval, AdvertisingInterval::ms2000);
+    EXPECT_EQ(interval, AdvertisingInterval::Ms2000);
 }
 
 // ========== Advertising Type Tests ==========
@@ -79,7 +79,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingType) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "2\r\n");
     HM11Driver driver(uart);
-    AdvertisingType type;
+    AdvertisingType type{};
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_advertising_type(type, status));
     EXPECT_EQ(status, Status::Ok);
@@ -164,7 +164,7 @@ TEST(HM11DriverAdvertisingTest, GetReliableAdvertisingMode_Normal) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "0\r\n");
     HM11Driver driver(uart);
-    AdvertisingMode mode;
+    AdvertisingMode mode{};
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_reliable_advertising_mode(mode, status));
     EXPECT_EQ(status, Status::Ok);
@@ -175,7 +175,7 @@ TEST(HM11DriverAdvertisingTest, GetReliableAdvertisingMode_Reliable) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "1\r\n");
     HM11Driver driver(uart);
-    AdvertisingMode mode;
+    AdvertisingMode mode{};
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_reliable_advertising_mode(mode, status));
     EXPECT_EQ(status, Status::Ok);
@@ -189,7 +189,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_Error) {
     uart.set_next_receive("ERROR\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
-    EXPECT_FALSE(driver.set_advertising_interval(AdvertisingInterval::ms100, status));
+    EXPECT_FALSE(driver.set_advertising_interval(AdvertisingInterval::Ms100, status));
     EXPECT_NE(status, Status::Ok);
 }
 
@@ -197,7 +197,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Error) {
     MockUARTPort uart;
     uart.set_next_receive("ERROR\r\n");
     HM11Driver driver(uart);
-    AdvertisingInterval interval;
+    AdvertisingInterval interval{};
     Status status = Status::Ok;
     EXPECT_FALSE(driver.get_advertising_interval(interval, status));
     EXPECT_NE(status, Status::Ok);
@@ -207,7 +207,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_InvalidChar) {
     MockUARTPort uart;
     uart.set_next_receive(OK_GET + "Z\r\n");  // Invalid character
     HM11Driver driver(uart);
-    AdvertisingInterval interval;
+    AdvertisingInterval interval{};
     Status status = Status::Ok;
     EXPECT_FALSE(driver.get_advertising_interval(interval, status));
     EXPECT_EQ(status, Status::Error);
