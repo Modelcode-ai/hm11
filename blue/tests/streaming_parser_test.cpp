@@ -9,7 +9,7 @@ using namespace hm11;
 
 // Helper to convert string to uint8_t*
 std::vector<std::uint8_t> to_bytes(const std::string& str) {
-    return std::vector<std::uint8_t>(str.begin(), str.end());
+    return {str.begin(), str.end()};
 }
 
 // Helper callback for tests

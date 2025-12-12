@@ -23,16 +23,16 @@ namespace hm11 {
       void receive(std::span<uint8_t> buffer, Status& status, unsigned int timeout [[maybe_unused]] = 1000) override {
           // If we have receive fragments, return them one at a time
           if (!receive_fragments.empty()) {
-              const std::string fragment = receive_fragments.front();  // Copy first
+              const std::string FRAGMENT = receive_fragments.front();  // Copy first
               receive_fragments.erase(receive_fragments.begin());      // Then erase
 
-              if (fragment.size() > buffer.size()) {
+              if (FRAGMENT.size() > buffer.size()) {
                   status = Status::InvalidLength;
                   return;
               }
 
-              for (std::size_t i = 0; i < fragment.size(); ++i) {
-                  buffer[i] = static_cast<uint8_t>(fragment[i]);
+              for (std::size_t i = 0; i < FRAGMENT.size(); ++i) {
+                  buffer[i] = static_cast<uint8_t>(FRAGMENT[i]);
               }
               status = Status::Ok;
               return;
@@ -72,8 +72,8 @@ namespace hm11 {
        * @brief Add a fragment to be returned by subsequent receive calls.
        * Each call to receive() will return one fragment in order.
        */
-      void add_receive_fragment(const std::string_view fragment) {
-          receive_fragments.push_back(std::string(fragment));
+      void add_receive_fragment(const std::string_view FRAGMENT) {
+          receive_fragments.emplace_back(FRAGMENT);
       }
 
       /**

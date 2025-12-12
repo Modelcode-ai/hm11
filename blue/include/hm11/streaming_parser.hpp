@@ -24,11 +24,11 @@ namespace hm11 {
  * @brief Information about a discovered Bluetooth device.
  */
 struct DiscoveredDevice {
-    std::array<char, 12> mac;  // MAC address (12 hex chars, e.g., "001122334455")
-    std::string name;          // Device name (variable length)
-    std::string rssi;          // RSSI value as string (variable length)
+    std::array<char, 12> mac{};  // MAC address (12 hex chars, e.g., "001122334455")
+    std::string name;            // Device name (variable length)
+    std::string rssi;            // RSSI value as string (variable length)
 
-    DiscoveredDevice() : mac{}, name{}, rssi{} {}
+    DiscoveredDevice() = default;
 
     void clear() {
         mac.fill('\0');
@@ -67,7 +67,7 @@ public:
     /**
      * @brief Parser states.
      */
-    enum class State {
+    enum class State : std::uint8_t {
         Selection,  // Looking for next prefix (OK+DISCS, OK+DISC:, OK+NAME:, OK+RSSI:, OK+DISCE)
         MAC,        // Reading MAC address (12 chars)
         Name,       // Reading device name (until \r\n)
@@ -95,12 +95,12 @@ public:
     /**
      * @brief Get the current parser state.
      */
-    State get_state() const { return state_; }
+    State get_state() const { return m_state; }
 
     /**
      * @brief Check if scan is complete.
      */
-    bool is_complete() const { return state_ == State::Complete; }
+    bool is_complete() const { return m_state == State::Complete; }
 
     /**
      * @brief Reset the parser to initial state.
@@ -142,11 +142,11 @@ private:
      */
     void invoke_callback();
 
-    DiscoveredCallback callback_;
-    void* user_data_;
-    DiscoveredDevice current_device_;
-    State state_;
-    std::string buffer_;  // Accumulates partial data between parse() calls
+    DiscoveredCallback m_callback;
+    void* m_user_data;
+    DiscoveredDevice m_current_device;
+    State m_state{State::Selection};
+    std::string m_buffer;  // Accumulates partial data between parse() calls
 };
 
 } // namespace hm11

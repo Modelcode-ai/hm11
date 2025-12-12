@@ -24,22 +24,22 @@ namespace hm11 {
 
     // Advertising interval values (ms)
     enum class AdvertisingInterval : uint8_t {
-        ms100 = 0,
-        ms211,
-        ms252,
-        ms318,
-        ms417,
-        ms546,
-        ms760,
-        ms852,
-        ms1022,
-        ms1285,
-        ms2000,
-        ms3000,
-        ms4000,
-        ms5000,
-        ms6000,
-        ms7000
+        Ms100 = 0,
+        Ms211,
+        Ms252,
+        Ms318,
+        Ms417,
+        Ms546,
+        Ms760,
+        Ms852,
+        Ms1022,
+        Ms1285,
+        Ms2000,
+        Ms3000,
+        Ms4000,
+        Ms5000,
+        Ms6000,
+        Ms7000
     };
 
     // Advertising type
@@ -72,27 +72,27 @@ namespace hm11 {
 
     // Link layer connection interval (ms)
     enum class LinkLayerConnectionInterval : uint8_t {
-        ms7 = 0,
-        ms_10,
-        ms15,
-        ms20,
-        ms25,
-        ms30,
-        ms35,
-        ms40,
-        ms45,
-        ms4000
+        Ms7 = 0,
+        Ms10,
+        Ms15,
+        Ms20,
+        Ms25,
+        Ms30,
+        Ms35,
+        Ms40,
+        Ms45,
+        Ms4000
     };
 
     // Connection supervision timeout (ms)
     enum class ConnectionSupervisionTimeout : uint8_t {
-        ms100 = 0,
-        ms1000,
-        ms2000,
-        ms3000,
-        ms4000,
-        ms5000,
-        ms6000
+        Ms100 = 0,
+        Ms1000,
+        Ms2000,
+        Ms3000,
+        Ms4000,
+        Ms5000,
+        Ms6000
     };
 
     // Result of a connect attempt
@@ -148,7 +148,7 @@ namespace hm11 {
 
     // Notify mode
     enum class NotifyMode : uint8_t {
-        Without_Address = 0,
+        WithoutAddress = 0,
         WithAddress
     };
 
