@@ -108,7 +108,6 @@ void HM11Driver<UARTImpl>::find_all_services_uuid(
         // Start streaming receive - equivalent to Ada's As_Stream => True
         hal::UARTData8b response_data{response_buffer_.data(), response_buffer_.size()};
 
-        // TODO: Implement streaming receive with timeout
         // For now, implement simplified blocking receive for basic functionality
         uart_.Receive(response_data, status);
         if (status != StatusType::Ok) {
@@ -254,7 +253,6 @@ void HM11Driver<UARTImpl>::find_all_characteristics_uuid(
         // Start streaming receive - equivalent to Ada's As_Stream => True
         hal::UARTData8b response_data{response_buffer_.data(), response_buffer_.size()};
 
-        // TODO: Implement streaming receive with timeout
         // For now, implement simplified blocking receive for basic functionality
         uart_.Receive(response_data, status);
         if (status != StatusType::Ok) {
@@ -304,7 +302,6 @@ void HM11Driver<UARTImpl>::find_characteristics_uuid(
         // Start streaming receive - equivalent to Ada's As_Stream => True
         hal::UARTData8b response_data{response_buffer_.data(), response_buffer_.size()};
 
-        // TODO: Implement streaming receive with timeout
         // For now, implement simplified blocking receive for basic functionality
         uart_.Receive(response_data, status);
         if (status != StatusType::Ok) {

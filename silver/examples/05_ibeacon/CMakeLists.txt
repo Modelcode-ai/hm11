@@ -2,7 +2,7 @@
 # Demonstrates Task #4: iBeacon Discovery with Specialized Parsing
 
 # Create the example executable
-add_executable(05_ibeacon main.cpp ../../src/discovery.cpp)
+add_executable(05_ibeacon main.cpp)
 
 # Link required libraries
 target_link_libraries(05_ibeacon

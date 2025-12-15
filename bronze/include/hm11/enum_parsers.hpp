@@ -241,6 +241,107 @@ std::optional<BondMode> parse_bond_mode(std::string_view str);
  */
 std::optional<UartSleepType> parse_uart_sleep_type(std::string_view str);
 
+// ============================================================================
+// Character Conversion Functions (for single-char enum representations)
+// ============================================================================
+
+/**
+ * @brief Convert AdvertisingInterval enum to character
+ * @param interval The advertising interval enum value
+ * @return Character representation ('0'-'9', 'A'-'F')
+ */
+char to_char(AdvertisingInterval interval);
+
+/**
+ * @brief Convert character to AdvertisingInterval enum
+ * @param c Character representation ('0'-'9', 'A'-'F')
+ * @param tag Type tag for overload resolution (unused)
+ * @return AdvertisingInterval enum value
+ */
+AdvertisingInterval from_char(char c, [[maybe_unused]] AdvertisingInterval* tag);
+
+/**
+ * @brief Convert AdvertisingType enum to character
+ * @param type The advertising type enum value
+ * @return Character representation ('0'-'3')
+ */
+char to_char(AdvertisingType type);
+
+/**
+ * @brief Convert character to AdvertisingType enum
+ * @param c Character representation ('0'-'3')
+ * @param tag Type tag for overload resolution (unused)
+ * @return AdvertisingType enum value
+ */
+AdvertisingType from_char(char c, [[maybe_unused]] AdvertisingType* tag);
+
+/**
+ * @brief Convert AdvertisingMode enum to character
+ * @param mode The advertising mode enum value
+ * @return Character representation ('0'-'1')
+ */
+char to_char(AdvertisingMode mode);
+
+/**
+ * @brief Convert character to AdvertisingMode enum
+ * @param c Character representation ('0'-'1')
+ * @param tag Type tag for overload resolution (unused)
+ * @return AdvertisingMode enum value
+ */
+AdvertisingMode from_char(char c, [[maybe_unused]] AdvertisingMode* tag);
+
+/**
+ * @brief Convert WorkMode enum to character
+ * @param mode The work mode enum value
+ * @return Character representation ('0'-'2')
+ */
+char to_char(WorkMode mode);
+
+/**
+ * @brief Convert character to WorkMode enum
+ * @param c Character representation ('0'-'2')
+ * @param tag Type tag for overload resolution (unused)
+ * @return WorkMode enum value
+ */
+WorkMode from_char(char c, [[maybe_unused]] WorkMode* tag);
+
+/**
+ * @brief Convert WorkType enum to character
+ * @param type The work type enum value
+ * @return Character representation ('0'-'1')
+ */
+char to_char(WorkType type);
+
+/**
+ * @brief Convert character to WorkType enum
+ * @param c Character representation ('0'-'1')
+ * @param tag Type tag for overload resolution (unused)
+ * @return WorkType enum value
+ */
+WorkType from_char(char c, [[maybe_unused]] WorkType* tag);
+
+/**
+ * @brief Convert NotifyMode enum to character
+ * @param mode The notify mode enum value
+ * @return Character representation ('0'-'1')
+ */
+char to_char(NotifyMode mode);
+
+/**
+ * @brief Convert character to NotifyMode enum
+ * @param c Character representation ('0'-'1')
+ * @param tag Type tag for overload resolution (unused)
+ * @return NotifyMode enum value
+ */
+NotifyMode from_char(char c, [[maybe_unused]] NotifyMode* tag);
+
+// Template overload for type deduction
+template<typename T>
+T from_char(char c) {
+    T* tag = nullptr;
+    return from_char(c, tag);
+}
+
 } // namespace hm11
 
 #endif // HM11_ENUM_PARSERS_HPP

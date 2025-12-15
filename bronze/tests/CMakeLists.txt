@@ -62,8 +62,8 @@ target_link_libraries(minimal_test PRIVATE GTest::gtest GTest::gtest_main)
 add_test(NAME minimal_test COMMAND minimal_test)
 
 # Add subdirectories for module tests - uncomment as they are implemented
-# add_subdirectory(hal)
-# add_subdirectory(platform)
+add_subdirectory(hal)
+add_subdirectory(platform)
 add_subdirectory(sync)
 add_subdirectory(util)
 add_subdirectory(integration)

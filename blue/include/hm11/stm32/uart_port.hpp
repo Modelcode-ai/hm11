@@ -2,10 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <span>
 #include <string_view>
-#include <vector>
 
 namespace hm11 {
 
@@ -27,7 +25,8 @@ enum class Status : uint8_t {
  */
 class UARTPort {
   public:
-    using ReceiveHandler = std::function<void(std::span<uint8_t> received, Status& status, unsigned int timeout)>;
+    // C-style function pointer for receive handler (no heap allocation)
+    using ReceiveHandler = void (*)(std::span<uint8_t> received, Status& status, unsigned int timeout);
 
     UARTPort() = default;
     virtual ~UARTPort() = default;

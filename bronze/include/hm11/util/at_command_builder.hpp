@@ -153,13 +153,15 @@ constexpr std::array<std::string_view, 3> WORK_MODE_STRINGS = {
 /**
  * @brief Static mapping of UartBaudRate enum to string representation
  */
-constexpr std::array<std::string_view, 6> UART_BAUD_RATE_STRINGS = {
+constexpr std::array<std::string_view, 8> UART_BAUD_RATE_STRINGS = {
     "0", // UartBaudRate::Br9600
     "1", // UartBaudRate::Br19200
     "2", // UartBaudRate::Br38400
     "3", // UartBaudRate::Br57600
     "4", // UartBaudRate::Br115200
-    "5"  // UartBaudRate::Br230400
+    "5", // UartBaudRate::Br4800
+    "6", // UartBaudRate::Br2400
+    "7"  // UartBaudRate::Br1200
 };
 
 /**

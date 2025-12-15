@@ -86,6 +86,11 @@ class UARTMock : public hal::UARTPort {
         for (char c : data) {
             m_receive_queue_8b.push_back(static_cast<hal::UInt8>(c));
         }
+        // For empty strings, queue a single null terminator to mark that data was set
+        // For non-empty strings, don't add null - let receive add it
+        if (data.empty()) {
+            m_receive_queue_8b.push_back(0);
+        }
     }
 
     /**
@@ -109,11 +114,27 @@ class UARTMock : public hal::UARTPort {
     const std::vector<hal::UInt16>& transmitted_data_9b() const { return m_transmitted_data_9b; }
 
     /**
+     * @brief Get the transmitted data as a string
+     * @return The transmitted data as a string
+     */
+    std::string get_transmitted_string() const {
+        return {reinterpret_cast<const char*>(m_transmitted_data_8b.data()), m_transmitted_data_8b.size()};
+    }
+
+    /**
      * @brief Clear the transmitted data
      */
     void clear_transmitted_data() {
         m_transmitted_data_8b.clear();
         m_transmitted_data_9b.clear();
+    }
+
+    /**
+     * @brief Clear the receive queue
+     */
+    void clear_receive_queue() {
+        m_receive_queue_8b.clear();
+        m_receive_queue_9b.clear();
     }
 
 /**
@@ -169,9 +190,10 @@ void setup_default_behavior() {
              Invoke([this](hal::UartData8b& data, hal::UartStatus& status, std::chrono::milliseconds) {
                 // If we have data in the queue, fill the buffer
                 if (!m_receive_queue_8b.empty()) {
+                    // Copy as much data as possible
                     size_t copy_count = std::min(data.size(), m_receive_queue_8b.size());
                     std::copy_n(m_receive_queue_8b.begin(), copy_count, data.begin());
-                    // Add a null terminator if space is available
+                    // Add a null terminator if there's space after the data
                     if (copy_count < data.size()) {
                         data[copy_count] = 0;
                     }
@@ -222,11 +244,15 @@ void setup_default_behavior() {
         );
 }
 
-  private:
-    hal::UartDataSize m_data_size;
-    hal::UartStatus m_default_status{hal::UartStatus::Ok};
+  protected:
+    // Protected so derived classes can access transmitted data
     std::vector<hal::UInt8> m_transmitted_data_8b;
     std::vector<hal::UInt16> m_transmitted_data_9b;
+    // Protected so derived classes can check default status
+    hal::UartStatus m_default_status{hal::UartStatus::Ok};
+
+  private:
+    hal::UartDataSize m_data_size;
     std::deque<hal::UInt8> m_receive_queue_8b;
     std::deque<hal::UInt16> m_receive_queue_9b;
 };

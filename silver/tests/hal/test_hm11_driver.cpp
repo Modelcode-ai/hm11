@@ -796,10 +796,10 @@ TEST_F(DiscoveryTest, ScanBasicDevice) {
     auto driver = make_hm11_driver(std::move(mock));
     UARTStatus status = UARTStatus::Busy;
 
-    constexpr int TEST_USER_DATA = 42;
+    int TEST_USER_DATA = 42;
 
     // Test device discovery scan
-    driver.scan(test_discovery_callback, const_cast<int*>(&TEST_USER_DATA), 1000, status);
+    driver.scan(test_discovery_callback, &TEST_USER_DATA, 1000, status);
 
     EXPECT_EQ(status, UARTStatus::Ok);
     EXPECT_EQ(discovered_devices.size(), 1);
@@ -960,10 +960,10 @@ TEST_F(DiscoveryTest, ScanIBeaconBasicDevice) {
     auto driver = make_hm11_driver(std::move(mock));
     UARTStatus status = UARTStatus::Busy;
 
-    constexpr int TEST_USER_DATA = 99;
+    int TEST_USER_DATA = 99;
 
     // Test iBeacon discovery scan
-    driver.scan_ibeacon(test_ibeacon_callback, const_cast<int*>(&TEST_USER_DATA), 2000, status);
+    driver.scan_ibeacon(test_ibeacon_callback, &TEST_USER_DATA, 2000, status);
 
     EXPECT_EQ(status, UARTStatus::Ok);
     EXPECT_EQ(discovered_ibeacons.size(), 1);
@@ -1098,7 +1098,7 @@ class DiscoveryConnectionTest : public ::testing::Test {
         const MacAddress& mac,
         std::string_view name,
         std::string_view rssi,
-        void* user_data) {
+        void* /*user_data*/) {
         discovered_devices.push_back({id, mac, std::string(name), std::string(rssi)});
     }
 
@@ -1116,7 +1116,7 @@ class DiscoveryConnectionTest : public ::testing::Test {
                                      "OK+RSSI:-75\r\n"
                                      "OK+DISCE";
 
-        return std::vector<uint8_t>(response.begin(), response.end());
+        return {response.begin(), response.end()};
     }
 };
 
@@ -1141,7 +1141,9 @@ TEST_F(DiscoveryConnectionTest, DeviceStorageDuringDiscovery) {
         auto device_info = driver.get_discovered_device(i);
         ASSERT_TRUE(device_info.has_value());
 
-        const auto& info = device_info->get();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access) - checked above with ASSERT_TRUE
+        const auto& wrapper = *device_info;
+        const auto& info = wrapper.get();
         // Device MAC should match expected pattern
         EXPECT_FALSE(std::string(info.mac).empty());
 

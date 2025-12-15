@@ -1,15 +1,13 @@
 # HAL tests
 
-add_library(hm11_hal_tests OBJECT
+# Create test executable for UART tests
+add_hm11_test(uart_test
+    uart_test.cpp
+    ${CMAKE_SOURCE_DIR}/tests/test_main.cpp
+)
+
+# Create test executable for HAL types tests
+add_hm11_test(hal_types_test
     hal_test.cpp
-)
-
-target_include_directories(hm11_hal_tests
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-target_link_libraries(hm11_hal_tests
-    PRIVATE
-    GTest::gtest
+    ${CMAKE_SOURCE_DIR}/tests/test_main.cpp
 )

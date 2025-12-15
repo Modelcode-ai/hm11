@@ -179,6 +179,14 @@ class UartData9b {
     explicit UartData9b(UInt16Span span) noexcept : data_span(span) {}
 
     /**
+     * @brief Construct a new UartData9b object from a pointer and length
+     *
+     * @param data Pointer to UInt16 data
+     * @param length Length of the data
+     */
+    explicit UartData9b(UInt16* data, std::size_t length) noexcept : data_span(data, length) {}
+
+    /**
      * @brief Construct a new UART_Data_9b object from a container
      *
      * @tparam Container Container type supporting data() and size()

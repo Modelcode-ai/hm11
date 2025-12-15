@@ -38,8 +38,8 @@ TEST(StreamingParserTest, SingleDeviceComplete) {
     EXPECT_TRUE(parser.is_complete());
     EXPECT_EQ(devices.size(), 1);
     EXPECT_EQ(std::string(devices[0].mac.data(), 12), "001122334455");
-    EXPECT_EQ(devices[0].name, "TestDevice");
-    EXPECT_EQ(devices[0].rssi, "-65");
+    EXPECT_EQ(devices[0].name_view(), "TestDevice");
+    EXPECT_EQ(devices[0].rssi_view(), "-65");
 }
 
 TEST(StreamingParserTest, SingleDeviceFragmented) {
@@ -64,8 +64,8 @@ TEST(StreamingParserTest, SingleDeviceFragmented) {
     EXPECT_TRUE(parser.is_complete());
     EXPECT_EQ(devices.size(), 1);
     EXPECT_EQ(std::string(devices[0].mac.data(), 12), "001122334455");
-    EXPECT_EQ(devices[0].name, "TestDevice");
-    EXPECT_EQ(devices[0].rssi, "-65");
+    EXPECT_EQ(devices[0].name_view(), "TestDevice");
+    EXPECT_EQ(devices[0].rssi_view(), "-65");
 }
 
 TEST(StreamingParserTest, DeviceWithLongName) {
@@ -85,8 +85,8 @@ TEST(StreamingParserTest, DeviceWithLongName) {
     EXPECT_TRUE(complete);
     EXPECT_EQ(devices.size(), 1);
     EXPECT_EQ(std::string(devices[0].mac.data(), 12), "AABBCCDDEEFF");
-    EXPECT_EQ(devices[0].name, "VeryLongDeviceNameThatSpansMultipleBytes");
-    EXPECT_EQ(devices[0].rssi, "-72");
+    EXPECT_EQ(devices[0].name_view(), "VeryLongDeviceNameThatSpansMultipleBytes");
+    EXPECT_EQ(devices[0].rssi_view(), "-72");
 }
 
 TEST(StreamingParserTest, DeviceWithNoName) {
@@ -106,8 +106,8 @@ TEST(StreamingParserTest, DeviceWithNoName) {
     EXPECT_TRUE(complete);
     EXPECT_EQ(devices.size(), 1);
     EXPECT_EQ(std::string(devices[0].mac.data(), 12), "112233445566");
-    EXPECT_EQ(devices[0].name, "");
-    EXPECT_EQ(devices[0].rssi, "-80");
+    EXPECT_EQ(devices[0].name_view(), "");
+    EXPECT_EQ(devices[0].rssi_view(), "-80");
 }
 
 // ========== Multiple Devices Tests ==========
@@ -136,16 +136,16 @@ TEST(StreamingParserTest, MultipleDevices) {
     EXPECT_EQ(devices.size(), 3);
 
     EXPECT_EQ(std::string(devices[0].mac.data(), 12), "001122334455");
-    EXPECT_EQ(devices[0].name, "Device1");
-    EXPECT_EQ(devices[0].rssi, "-65");
+    EXPECT_EQ(devices[0].name_view(), "Device1");
+    EXPECT_EQ(devices[0].rssi_view(), "-65");
 
     EXPECT_EQ(std::string(devices[1].mac.data(), 12), "AABBCCDDEEFF");
-    EXPECT_EQ(devices[1].name, "Device2");
-    EXPECT_EQ(devices[1].rssi, "-70");
+    EXPECT_EQ(devices[1].name_view(), "Device2");
+    EXPECT_EQ(devices[1].rssi_view(), "-70");
 
     EXPECT_EQ(std::string(devices[2].mac.data(), 12), "112233AABBCC");
-    EXPECT_EQ(devices[2].name, "Device3");
-    EXPECT_EQ(devices[2].rssi, "-75");
+    EXPECT_EQ(devices[2].name_view(), "Device3");
+    EXPECT_EQ(devices[2].rssi_view(), "-75");
 }
 
 TEST(StreamingParserTest, MultipleDevicesFragmented) {
@@ -223,7 +223,7 @@ TEST(StreamingParserTest, NameSplitAcrossMultipleReads) {
     EXPECT_TRUE(parser.parse(bytes3.data(), bytes3.size()));
 
     EXPECT_EQ(devices.size(), 1);
-    EXPECT_EQ(devices[0].name, "VeryLongName");
+    EXPECT_EQ(devices[0].name_view(), "VeryLongName");
 }
 
 TEST(StreamingParserTest, ResetParser) {

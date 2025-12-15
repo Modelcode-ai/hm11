@@ -30,7 +30,7 @@ class IBeaconOperationsTest : public ::testing::Test {
 
     // Helper function to create response data from string
     std::vector<uint8_t> create_response(const std::string& response) {
-        return std::vector<uint8_t>(response.begin(), response.end());
+        return {response.begin(), response.end()};
     }
 
     // Helper function to verify transmitted command
@@ -435,8 +435,7 @@ TEST_F(IBeaconOperationsTest, IBeaconScanningCallbackBasic) {
     hal::UARTStatus status = hal::UARTStatus::ErrError;
     driver.scan_ibeacon(callback, &callback_data, 1000, status);
 
-    // Verify API accepts callback correctly
-    EXPECT_TRUE(callback != nullptr);
+    // Verify API accepts callback correctly (lambda is always non-null by definition)
 }
 
 TEST_F(IBeaconOperationsTest, IBeaconScanningStreamingResponse) {

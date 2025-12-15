@@ -89,7 +89,7 @@ TEST(HM11DriverAdvancedTest, GetLastConnectedDeviceAddress) {
 
 TEST(HM11DriverAdvancedTest, SetSaveConnectedMAC_True) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_save_connected_mac(true, status));
@@ -98,7 +98,7 @@ TEST(HM11DriverAdvancedTest, SetSaveConnectedMAC_True) {
 
 TEST(HM11DriverAdvancedTest, SetSaveConnectedMAC_False) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_save_connected_mac(false, status));
@@ -107,7 +107,7 @@ TEST(HM11DriverAdvancedTest, SetSaveConnectedMAC_False) {
 
 TEST(HM11DriverAdvancedTest, GetSaveConnectedMAC_True) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     bool save = false;
     Status status = Status::Ok;
@@ -117,7 +117,7 @@ TEST(HM11DriverAdvancedTest, GetSaveConnectedMAC_True) {
 
 TEST(HM11DriverAdvancedTest, GetSaveConnectedMAC_False) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     bool save = true;
     Status status = Status::Ok;
@@ -127,7 +127,7 @@ TEST(HM11DriverAdvancedTest, GetSaveConnectedMAC_False) {
 
 TEST(HM11DriverAdvancedTest, SetConnectRemoteDeviceTimeout) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "005000\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "005000\r\n");
     HM11Driver driver(uart);
     util::ConnectTimeout timeout("005000");
     Status status = Status::Ok;
@@ -137,7 +137,7 @@ TEST(HM11DriverAdvancedTest, SetConnectRemoteDeviceTimeout) {
 
 TEST(HM11DriverAdvancedTest, GetConnectRemoteDeviceTimeout) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "010000\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "010000\r\n");
     HM11Driver driver(uart);
     util::ConnectTimeout timeout("000000");
     Status status = Status::Ok;
@@ -149,7 +149,7 @@ TEST(HM11DriverAdvancedTest, GetConnectRemoteDeviceTimeout) {
 
 TEST(HM11DriverAdvancedTest, SetDiscoveryTime) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     util::DiscoveryTime time(3);
     Status status = Status::Ok;
@@ -159,7 +159,7 @@ TEST(HM11DriverAdvancedTest, SetDiscoveryTime) {
 
 TEST(HM11DriverAdvancedTest, GetDiscoveryTime) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "5\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "5\r\n");
     HM11Driver driver(uart);
     util::DiscoveryTime time(1);
     Status status = Status::Ok;
@@ -169,7 +169,7 @@ TEST(HM11DriverAdvancedTest, GetDiscoveryTime) {
 
 TEST(HM11DriverAdvancedTest, SetShowDeviceInformation_ShowName) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_show_device_information_when_discovery(ShowDeviceInformation::ShowName, status));
@@ -178,7 +178,7 @@ TEST(HM11DriverAdvancedTest, SetShowDeviceInformation_ShowName) {
 
 TEST(HM11DriverAdvancedTest, SetShowDeviceInformation_ShowRSSIAndName) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_show_device_information_when_discovery(ShowDeviceInformation::ShowRSSIAndName, status));
@@ -187,7 +187,7 @@ TEST(HM11DriverAdvancedTest, SetShowDeviceInformation_ShowRSSIAndName) {
 
 TEST(HM11DriverAdvancedTest, GetShowDeviceInformation) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "2\r\n");
     HM11Driver driver(uart);
     ShowDeviceInformation show = ShowDeviceInformation::DontShow;
     Status status = Status::Ok;
@@ -266,7 +266,7 @@ TEST(HM11DriverAdvancedTest, SetMethodAndCharacteristicHandle_Notify) {
 
 TEST(HM11DriverAdvancedTest, SetUseCharacteristicUUIDCount_Query) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "?\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "?\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_use_characteristic_uuid_count(CharacteristicUUIDCount::Query, status));
@@ -275,7 +275,7 @@ TEST(HM11DriverAdvancedTest, SetUseCharacteristicUUIDCount_Query) {
 
 TEST(HM11DriverAdvancedTest, SetUseCharacteristicUUIDCount_One) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_use_characteristic_uuid_count(CharacteristicUUIDCount::One, status));
@@ -284,7 +284,7 @@ TEST(HM11DriverAdvancedTest, SetUseCharacteristicUUIDCount_One) {
 
 TEST(HM11DriverAdvancedTest, SetCharacteristic) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "\r\n");
     HM11Driver driver(uart);
     util::CharacteristicType value("FFE1");
     Status status = Status::Ok;
@@ -294,7 +294,7 @@ TEST(HM11DriverAdvancedTest, SetCharacteristic) {
 
 TEST(HM11DriverAdvancedTest, GetCharacteristic) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0xFFE2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0xFFE2\r\n");
     HM11Driver driver(uart);
     util::CharacteristicType result("0000");
     Status status = Status::Ok;
@@ -306,7 +306,7 @@ TEST(HM11DriverAdvancedTest, GetCharacteristic) {
 
 TEST(HM11DriverAdvancedTest, SetServiceUUID) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0xFFE0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0xFFE0\r\n");
     HM11Driver driver(uart);
     util::UUID value("FFE0");
     Status status = Status::Ok;
@@ -316,7 +316,7 @@ TEST(HM11DriverAdvancedTest, SetServiceUUID) {
 
 TEST(HM11DriverAdvancedTest, GetServiceUUID) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0x1800\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0x1800\r\n");
     HM11Driver driver(uart);
     util::UUID result("0000");
     Status status = Status::Ok;
@@ -328,7 +328,7 @@ TEST(HM11DriverAdvancedTest, GetServiceUUID) {
 
 TEST(HM11DriverAdvancedTest, SetModulePower_Dbm0) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "2\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "2\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_module_power(ModulePower::Dbm0, status));
@@ -337,7 +337,7 @@ TEST(HM11DriverAdvancedTest, SetModulePower_Dbm0) {
 
 TEST(HM11DriverAdvancedTest, SetModulePower_Dbm6) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_module_power(ModulePower::Dbm6, status));
@@ -346,7 +346,7 @@ TEST(HM11DriverAdvancedTest, SetModulePower_Dbm6) {
 
 TEST(HM11DriverAdvancedTest, GetModulePower) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     ModulePower power = ModulePower::Dbm0;
     Status status = Status::Ok;
@@ -356,7 +356,7 @@ TEST(HM11DriverAdvancedTest, GetModulePower) {
 
 TEST(HM11DriverAdvancedTest, SetOutputPower_Normal) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_output_power(OutputPower::NormalPower, status));
@@ -365,7 +365,7 @@ TEST(HM11DriverAdvancedTest, SetOutputPower_Normal) {
 
 TEST(HM11DriverAdvancedTest, SetOutputPower_Max) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_output_power(OutputPower::MaxPower, status));
@@ -374,7 +374,7 @@ TEST(HM11DriverAdvancedTest, SetOutputPower_Max) {
 
 TEST(HM11DriverAdvancedTest, GetOutputPower) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     OutputPower power = OutputPower::NormalPower;
     Status status = Status::Ok;

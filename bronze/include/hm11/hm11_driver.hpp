@@ -992,6 +992,557 @@ class HM11Driver {
     void disconnect(UartStatus& status);
 
     /**
+     * @brief Connect to a discovered device by its index
+     *
+     * This method connects to a device that was discovered during a scan, using its
+     * index in the discovered devices list.
+     * Required: Set_Work_Type (Respond_AT_Command) and Set_Role (Central)
+     * This command clears all discovered devices list.
+     *
+     * @param index The index of the discovered device (0-5)
+     * @param result Output parameter that will be set to the connection result
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @pre The work type must be set to Respond_AT_Command
+     * @pre A scan must have been performed to discover devices
+     * @post If status is UartStatus::Ok, the connection attempt has been initiated
+     * @post result will indicate the result of the connection attempt
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void connect(util::DiscoveredIndex index, ConnectResult& result, UartStatus& status);
+
+    /**
+     * @brief Clear the last connected device address
+     *
+     * This method clears the MAC address of the last connected device from the module's memory.
+     * Only used in Central role.
+     *
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, the last connected address has been cleared
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void clear_last_connected_address(UartStatus& status);
+
+    /**
+     * @brief Get the MAC address of the last connected device
+     *
+     * This method retrieves the MAC address of the last device that was connected.
+     * Only used in Central role.
+     *
+     * @param mac Output parameter that will be set to the MAC address
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, mac will contain the last connected MAC address
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void get_last_connected_device_address(std::string& mac, UartStatus& status);
+
+    /**
+     * @brief Set whether to save the connected device's MAC address
+     *
+     * This method enables or disables saving the MAC address of connected devices.
+     * Only used in Central role.
+     * When enabled, the module will try to connect to the saved MAC address on power-on.
+     *
+     * @param save True to enable saving, false to disable
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, the save setting has been updated
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void set_save_connected_mac(bool save, UartStatus& status);
+
+    /**
+     * @brief Get whether saving the connected device's MAC address is enabled
+     *
+     * Only used in Central role.
+     *
+     * @param save Output parameter that will be set to true if saving is enabled, false otherwise
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, save will contain the current setting
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void get_save_connected_mac(bool& save, UartStatus& status);
+
+    /**
+     * @brief Set the discovery time for scanning
+     *
+     * This method sets the duration of the scanning procedure.
+     * Only used in Central role.
+     * Added in V543 firmware.
+     *
+     * @param time The discovery time (1-9 seconds)
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, the discovery time has been set
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void set_discovery_time(util::DiscoveryTime time, UartStatus& status);
+
+    /**
+     * @brief Get the current discovery time setting
+     *
+     * Only used in Central role.
+     *
+     * @param time Output parameter that will be set to the current discovery time
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @pre The module must be in Central role
+     * @post If status is UartStatus::Ok, time will contain the current setting
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void get_discovery_time(util::DiscoveryTime& time, UartStatus& status);
+
+    /**
+     * @brief Set whether to show device information during discovery
+     *
+     * This method configures whether to include device name and/or RSSI information
+     * in the scan results.
+     *
+     * @param show The device information display mode
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @post If status is UartStatus::Ok, the display setting has been updated
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void set_show_device_information_when_discovery(ShowDeviceInformation show, UartStatus& status);
+
+    /**
+     * @brief Get the current device information display setting
+     *
+     * @param show Output parameter that will be set to the current display mode
+     * @param status Output parameter that will be set to the operation status
+     *
+     * @post If status is UartStatus::Ok, show will contain the current setting
+     *
+     * Thread safety: This method is not ISR-safe and should only be called
+     * from a single thread.
+     */
+    void get_show_device_information_when_discovery(ShowDeviceInformation& show, UartStatus& status);
+
+    // ============================================================================
+    // Advertising Configuration
+    // ============================================================================
+
+    /**
+     * @brief Set the advertising interval
+     *
+     * @param interval The advertising interval to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_advertising_interval(AdvertisingInterval interval, UartStatus& status);
+
+    /**
+     * @brief Get the current advertising interval
+     *
+     * @param interval Output parameter that will be set to the current advertising interval
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_advertising_interval(AdvertisingInterval& interval, UartStatus& status);
+
+    /**
+     * @brief Set the advertising type
+     *
+     * @param type The advertising type to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_advertising_type(AdvertisingType type, UartStatus& status);
+
+    /**
+     * @brief Get the current advertising type
+     *
+     * @param type Output parameter that will be set to the current advertising type
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_advertising_type(AdvertisingType& type, UartStatus& status);
+
+    /**
+     * @brief Set reliable advertising mode
+     *
+     * @param mode The advertising mode to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_reliable_advertising_mode(AdvertisingMode mode, UartStatus& status);
+
+    /**
+     * @brief Get the current reliable advertising mode
+     *
+     * @param mode Output parameter that will be set to the current mode
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_reliable_advertising_mode(AdvertisingMode& mode, UartStatus& status);
+
+    // ============================================================================
+    // White List Management
+    // ============================================================================
+
+    /**
+     * @brief Enable or disable MAC white list filtering
+     *
+     * @param enable True to enable white list, false to disable
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_white_list_switch(bool enable, UartStatus& status);
+
+    /**
+     * @brief Get the white list enable status
+     *
+     * @param enabled Output parameter that will be set to the white list status
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_white_list_switch(bool& enabled, UartStatus& status);
+
+    /**
+     * @brief Add a MAC address to the white list
+     *
+     * @param index The white list index (1-3)
+     * @param mac The MAC address to add
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_white_list_mac_addresses(util::MacWhiteListIndex index, const util::MacAddress& mac, UartStatus& status);
+
+    /**
+     * @brief Get a MAC address from the white list
+     *
+     * @param index The white list index (1-3)
+     * @param mac Output parameter that will be set to the MAC address
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_white_list_mac_address(util::MacWhiteListIndex index, util::MacAddress& mac, UartStatus& status);
+
+    // ============================================================================
+    // Security and Bonding
+    // ============================================================================
+
+    /**
+     * @brief Set the 6-digit PIN code for pairing
+     *
+     * @param pin The 6-digit PIN code
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_pin_code(const util::PinType& pin, UartStatus& status);
+
+    /**
+     * @brief Get the current PIN code
+     *
+     * @param pin Output parameter that will be set to the PIN code
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_pin_code(util::PinType& pin, UartStatus& status);
+
+    /**
+     * @brief Set the bond mode
+     *
+     * @param mode The bond mode to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_bond_mode(BondMode mode, UartStatus& status);
+
+    /**
+     * @brief Get the current bond mode
+     *
+     * @param mode Output parameter that will be set to the current bond mode
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_bond_mode(BondMode& mode, UartStatus& status);
+
+    /**
+     * @brief Remove all bonding information
+     *
+     * @param status Output parameter that will be set to the operation status
+     */
+    void remove_bond_information(UartStatus& status);
+
+    // ============================================================================
+    // Work Mode and Type Configuration
+    // ============================================================================
+
+    /**
+     * @brief Set the work mode
+     *
+     * @param mode The work mode to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_work_mode(WorkMode mode, UartStatus& status);
+
+    /**
+     * @brief Get the current work mode
+     *
+     * @param mode Output parameter that will be set to the current work mode
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_work_mode(WorkMode& mode, UartStatus& status);
+
+    /**
+     * @brief Set the work type
+     *
+     * @param type The work type to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_work_type(WorkType type, UartStatus& status);
+
+    /**
+     * @brief Get the current work type
+     *
+     * @param type Output parameter that will be set to the current work type
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_work_type(WorkType& type, UartStatus& status);
+
+    // ============================================================================
+    // Notification Configuration
+    // ============================================================================
+
+    /**
+     * @brief Enable or disable connection/disconnection notifications
+     *
+     * @param enable True to enable notifications, false to disable
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_notify_information(bool enable, UartStatus& status);
+
+    /**
+     * @brief Get the notification enable status
+     *
+     * @param enabled Output parameter that will be set to the notification status
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_notify_information(bool& enabled, UartStatus& status);
+
+    /**
+     * @brief Set the notify mode (with or without MAC address)
+     *
+     * @param mode The notify mode to set
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_notify_mode(NotifyMode mode, UartStatus& status);
+
+    /**
+     * @brief Get the current notify mode
+     *
+     * @param mode Output parameter that will be set to the current notify mode
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_notify_mode(NotifyMode& mode, UartStatus& status);
+
+    // ============================================================================
+    // PIO/GPIO Control
+    // ============================================================================
+
+    /**
+     * @brief Set a single PIO output status
+     *
+     * @param pio The PIO number (1-3)
+     * @param high True for high, false for low
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_pio_output_status(util::PioNumber pio, bool high, UartStatus& status);
+
+    /**
+     * @brief Get a single PIO output status
+     *
+     * @param pio The PIO number (1-3)
+     * @param high Output parameter that will be set to the PIO status
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_pio_output_status(util::PioNumber pio, bool& high, UartStatus& status);
+
+    /**
+     * @brief Set all PIOs output status at once
+     *
+     * @param pios The PIO states (3 hex characters)
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_pios_output_status(const util::PioNumbers& pios, UartStatus& status);
+
+    /**
+     * @brief Get all PIOs output status
+     *
+     * @param pios Output parameter that will be set to the PIO states
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_pios_output_status(util::PioNumbers& pios, UartStatus& status);
+
+    /**
+     * @brief Set the PIO collection rate
+     *
+     * @param rate The collection rate (0-99)
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_pio_collection_rate(util::PioCollectionRate rate, UartStatus& status);
+
+    /**
+     * @brief Get the current PIO collection rate
+     *
+     * @param rate Output parameter that will be set to the collection rate
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_pio_collection_rate(util::PioCollectionRate& rate, UartStatus& status);
+
+    /**
+     * @brief Set PIO states after power-on
+     *
+     * @param pios The PIO states (3 hex characters)
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_power_pin_output(const util::PioNumbers& pios, UartStatus& status);
+
+    /**
+     * @brief Get the PIO states after power-on
+     *
+     * @param pios Output parameter that will be set to the PIO states
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_power_pin_output(util::PioNumbers& pios, UartStatus& status);
+
+    /**
+     * @brief Set PIO states after connection
+     *
+     * @param pios The PIO states (3 hex characters)
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_connect_pin_output(const util::PioNumbers& pios, UartStatus& status);
+
+    /**
+     * @brief Get the PIO states after connection
+     *
+     * @param pios Output parameter that will be set to the PIO states
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_connect_pin_output(util::PioNumbers& pios, UartStatus& status);
+
+    // ============================================================================
+    // iBeacon Configuration
+    // ============================================================================
+
+    /**
+     * @brief Enable or disable iBeacon mode
+     *
+     * @param enable True to enable iBeacon, false to disable
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_ibeacon_switch(bool enable, UartStatus& status);
+
+    /**
+     * @brief Get the iBeacon enable status
+     *
+     * @param enabled Output parameter that will be set to the iBeacon status
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_ibeacon_switch(bool& enabled, UartStatus& status);
+
+    /**
+     * @brief Set the iBeacon UUID
+     *
+     * @param uuid The 32-character iBeacon UUID
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_ibeacon_uuid(const util::IBeaconUuid& uuid, UartStatus& status);
+
+    /**
+     * @brief Get the current iBeacon UUID
+     *
+     * @param uuid Output parameter that will be set to the iBeacon UUID
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_ibeacon_uuid(util::IBeaconUuid& uuid, UartStatus& status);
+
+    /**
+     * @brief Set the iBeacon major version
+     *
+     * @param version The 4-character major version
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_ibeacon_major_version(const util::VersionType& version, UartStatus& status);
+
+    /**
+     * @brief Get the current iBeacon major version
+     *
+     * @param version Output parameter that will be set to the major version
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_ibeacon_major_version(util::VersionType& version, UartStatus& status);
+
+    /**
+     * @brief Set the iBeacon minor version
+     *
+     * @param version The 4-character minor version
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_ibeacon_minor_version(const util::VersionType& version, UartStatus& status);
+
+    /**
+     * @brief Get the current iBeacon minor version
+     *
+     * @param version Output parameter that will be set to the minor version
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_ibeacon_minor_version(util::VersionType& version, UartStatus& status);
+
+    /**
+     * @brief Set the iBeacon measured power
+     *
+     * @param power The 2-character measured power value
+     * @param status Output parameter that will be set to the operation status
+     */
+    void set_ibeacon_measured_power(const util::MeasuredPower& power, UartStatus& status);
+
+    /**
+     * @brief Get the current iBeacon measured power
+     *
+     * @param power Output parameter that will be set to the measured power
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_ibeacon_measured_power(util::MeasuredPower& power, UartStatus& status);
+
+    // ============================================================================
+    // Temperature Monitoring
+    // ============================================================================
+
+    /**
+     * @brief Get the module's internal temperature
+     *
+     * @param temperature Output parameter that will be set to the temperature reading
+     * @param status Output parameter that will be set to the operation status
+     */
+    void get_module_temperature(util::InternalTemperatureType& temperature, UartStatus& status);
+
+    // ============================================================================
+    // GATT Services Discovery
+    // ============================================================================
+
+    /**
+     * @brief Discover all GATT services on the connected device
+     *
+     * @param status Output parameter that will be set to the operation status
+     */
+    void find_all_services_uuid(UartStatus& status);
+
+    /**
      * @brief Set the method and characteristic handle for GATT operations
      *
      * This command configures the method and characteristic handle for sending

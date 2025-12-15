@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cstring>
 #include <thread>
+#include <type_traits>
 
 #include "../include/hm11/driver.hpp"
 #include "../include/hm11/gatt/gatt.hpp"
@@ -20,6 +21,16 @@
 #include "../include/hm11/util/response_parser.hpp"
 
 namespace hm11 {
+
+// Helper template to detect if a type is a std::shared_ptr
+template <typename T>
+struct is_shared_ptr : std::false_type {};
+
+template <typename T>
+struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_shared_ptr_v = is_shared_ptr<T>::value;
 
 // Helper functions for working with buffer positions and parsing data
 
@@ -649,7 +660,12 @@ void hm11::HM11Driver<UARTImpl>::transmit(std::string_view command, hal::UartSta
     hal::UartData8b uart_data(data);
 
     // Transmit the data using the UART interface
-    uart.transmit(uart_data, status);
+    // Use arrow operator for pointer types, dot operator for direct types
+    if constexpr (is_shared_ptr_v<UARTImpl> || std::is_pointer_v<UARTImpl>) {
+        uart->transmit(uart_data, status);
+    } else {
+        uart.transmit(uart_data, status);
+    }
 }
 
 template <hm11::hal::UART_Implementation UARTImpl>
@@ -693,7 +709,12 @@ void hm11::HM11Driver<UARTImpl>::transmit(
     hal::UartData8b uart_data(combined_data);
 
     // Transmit the combined data
-    uart.transmit(uart_data, status);
+    // Use arrow operator for pointer types, dot operator for direct types
+    if constexpr (is_shared_ptr_v<UARTImpl> || std::is_pointer_v<UARTImpl>) {
+        uart->transmit(uart_data, status);
+    } else {
+        uart.transmit(uart_data, status);
+    }
 }
 
 template <hm11::hal::UART_Implementation UARTImpl>
@@ -952,13 +973,20 @@ void hm11::HM11Driver<UARTImpl>::get_advertising_interval(AdvertisingInterval& i
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1067,13 +1095,20 @@ void hm11::HM11Driver<UARTImpl>::get_advertising_type(AdvertisingType& type, hal
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1243,13 +1278,20 @@ void hm11::HM11Driver<UARTImpl>::get_module_power(ModulePower& power, hal::UartS
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1322,13 +1364,20 @@ void hm11::HM11Driver<UARTImpl>::get_work_mode(WorkMode& mode, hal::UartStatus& 
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1397,13 +1446,20 @@ void hm11::HM11Driver<UARTImpl>::get_work_type(WorkType& type, hal::UartStatus& 
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1470,13 +1526,20 @@ void hm11::HM11Driver<UARTImpl>::get_uart_baud_rate(UartBaudRate& baud_rate, hal
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1557,13 +1620,20 @@ void hm11::HM11Driver<UARTImpl>::get_module_auto_sleep(bool& enabled, hal::UartS
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1619,13 +1689,20 @@ void hm11::HM11Driver<UARTImpl>::get_ibeacon_switch(bool& enabled, hal::UartStat
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1775,13 +1852,20 @@ void hm11::HM11Driver<UARTImpl>::get_ibeacon_major_version(util::VersionType& ve
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1846,13 +1930,20 @@ void hm11::HM11Driver<UARTImpl>::get_ibeacon_minor_version(util::VersionType& ve
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -1917,13 +2008,20 @@ void hm11::HM11Driver<UARTImpl>::get_ibeacon_measured_power(util::MeasuredPower&
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2437,13 +2535,20 @@ void hm11::HM11Driver<UARTImpl>::get_pin_code(util::PinType& pin, hal::UartStatu
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2504,13 +2609,20 @@ void hm11::HM11Driver<UARTImpl>::get_bond_mode(BondMode& mode, hal::UartStatus& 
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2584,13 +2696,20 @@ void hm11::HM11Driver<UARTImpl>::get_white_list_switch(bool& enabled, hal::UartS
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2734,13 +2853,20 @@ void hm11::HM11Driver<UARTImpl>::get_notify_information(bool& enabled, hal::Uart
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2795,13 +2921,20 @@ void hm11::HM11Driver<UARTImpl>::get_notify_mode(NotifyMode& mode, hal::UartStat
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2857,13 +2990,20 @@ void hm11::HM11Driver<UARTImpl>::get_output_power(OutputPower& power, hal::UartS
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2931,13 +3071,20 @@ void hm11::HM11Driver<UARTImpl>::get_battery_monitor_switch(bool& enabled, hal::
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -2991,13 +3138,20 @@ void hm11::HM11Driver<UARTImpl>::query_battery_information(util::Percent& level,
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -3062,13 +3216,20 @@ void hm11::HM11Driver<UARTImpl>::get_uart_sleep_type(UartSleepType& type, hal::U
     // Prepare to receive the response by clearing the buffer
     std::memset(response.data(), 0, response.size());
 
-    // Create a shared port object
+    // Create a shared port object for the receive handler
+    // If UARTImpl is already a shared_ptr, use it directly; otherwise wrap it
     hal::AnyUartPort port;
-    try {
-        port = std::make_shared<UARTImpl>(uart);
-    } catch (const std::exception&) {
-        status = hal::UartStatus::ErrError;
-        return;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
     }
 
     // Call the receive handler to get the response
@@ -3104,6 +3265,231 @@ void hm11::HM11Driver<UARTImpl>::get_uart_sleep_type(UartSleepType& type, hal::U
             status = hal::UartStatus::ErrError;
             return;
     }
+}
+
+// Connection supervision timeout operations
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::set_connection_supervision_timeout(
+    ConnectionSupervisionTimeout value,
+    hal::UartStatus& status) {
+    // Build the command: AT+COSU[value]
+    std::string command = "AT+COSU";
+    command += std::to_string(static_cast<std::uint8_t>(value));
+
+    // Format for expected response: OK+Set:[value]
+    std::string expected_response = "OK+Set:";
+    expected_response += std::to_string(static_cast<std::uint8_t>(value));
+
+    // Send the command and check the response
+    transmit_and_check(command, expected_response, status);
+}
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::get_connection_supervision_timeout(
+    ConnectionSupervisionTimeout& result,
+    hal::UartStatus& status) {
+    // Use the AT command builder to create the query command
+    std::string command = "AT+COSU?";
+
+    // Transmit the command
+    transmit(command, status);
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Prepare to receive the response by clearing the buffer
+    std::memset(response.data(), 0, response.size());
+
+    // Create a shared port object for the receive handler
+    hal::AnyUartPort port;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
+    }
+
+    // Call the receive handler to get the response
+    receive_handler(port, response.data(), response.size(), status, std::chrono::milliseconds(1000), false);
+
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Extract the connection supervision timeout from the response
+    auto response_view = util::parser::to_string_view(response);
+
+    // Look for "OK+Get:" prefix
+    const std::string_view PREFIX = "OK+Get:";
+    auto value_opt = util::parser::extract_after(response_view, PREFIX);
+
+    if (!value_opt || value_opt->empty()) {
+        status = hal::UartStatus::ErrError;
+        return;
+    }
+
+    // Convert the character to the appropriate enum value
+    char value_char = (*value_opt)[0];
+
+    if (value_char >= '0' && value_char <= '6') {
+        result = static_cast<ConnectionSupervisionTimeout>(value_char - '0');
+    } else {
+        status = hal::UartStatus::ErrError;
+    }
+}
+
+// Update connection operations
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::set_update_connection(bool value, hal::UartStatus& status) {
+    // Build the command: AT+COUP[0/1]
+    std::string command = "AT+COUP";
+    command += (value ? '1' : '0');
+
+    // Format for expected response: OK+Set:[0/1]
+    std::string expected_response = "OK+Set:";
+    expected_response += (value ? '1' : '0');
+
+    // Send the command and check the response
+    transmit_and_check(command, expected_response, status);
+}
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::get_update_connection(bool& result, hal::UartStatus& status) {
+    // Use the AT command builder to create the query command
+    std::string command = "AT+COUP?";
+
+    // Transmit the command
+    transmit(command, status);
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Prepare to receive the response by clearing the buffer
+    std::memset(response.data(), 0, response.size());
+
+    // Create a shared port object for the receive handler
+    hal::AnyUartPort port;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
+    }
+
+    // Call the receive handler to get the response
+    receive_handler(port, response.data(), response.size(), status, std::chrono::milliseconds(1000), false);
+
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Extract the update connection value from the response
+    auto response_view = util::parser::to_string_view(response);
+
+    // Look for "OK+Get:" prefix
+    const std::string_view PREFIX = "OK+Get:";
+    auto value_opt = util::parser::extract_after(response_view, PREFIX);
+
+    if (!value_opt || value_opt->empty()) {
+        status = hal::UartStatus::ErrError;
+        return;
+    }
+
+    // Convert the character to boolean
+    char value_char = (*value_opt)[0];
+    result = (value_char == '1');
+}
+
+// Connect remote device timeout operations
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::set_connect_remote_device_timeout(
+    util::ConnectTimeout timeout,
+    hal::UartStatus& status) {
+    // Build the command: AT+TCON[timeout]
+    std::string command = "AT+TCON";
+    command += timeout.to_string();
+
+    // Format for expected response: OK+Set:[timeout]
+    std::string expected_response = "OK+Set:";
+    expected_response += timeout.to_string();
+
+    // Send the command and check the response
+    transmit_and_check(command, expected_response, status);
+}
+
+template <hm11::hal::UART_Implementation UARTImpl>
+void hm11::HM11Driver<UARTImpl>::get_connect_remote_device_timeout(
+    util::ConnectTimeout& timeout,
+    hal::UartStatus& status) {
+    // Use the AT command builder to create the query command
+    std::string command = "AT+TCON?";
+
+    // Transmit the command
+    transmit(command, status);
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Prepare to receive the response by clearing the buffer
+    std::memset(response.data(), 0, response.size());
+
+    // Create a shared port object for the receive handler
+    hal::AnyUartPort port;
+    if constexpr (is_shared_ptr_v<UARTImpl>) {
+        // UARTImpl is std::shared_ptr<T>, use it directly
+        port = uart;
+    } else {
+        // UARTImpl is a concrete type, need to wrap it
+        try {
+            port = std::make_shared<UARTImpl>(uart);
+        } catch (const std::exception&) {
+            status = hal::UartStatus::ErrError;
+            return;
+        }
+    }
+
+    // Call the receive handler to get the response
+    // The timeout is 6 characters long, so we need "OK+Get:" + 6 characters
+    constexpr std::size_t TIMEOUT_LENGTH = 6;
+    constexpr std::size_t PREFIX_LENGTH = 7; // "OK+Get:"
+    constexpr std::size_t EXPECTED_LENGTH = PREFIX_LENGTH + TIMEOUT_LENGTH;
+
+    receive_handler(port, response.data(), EXPECTED_LENGTH, status, std::chrono::milliseconds(1000), false);
+
+    if (status != hal::UartStatus::Ok) {
+        return;
+    }
+
+    // Extract the connect timeout from the response
+    auto response_view = util::parser::to_string_view(response.data(), EXPECTED_LENGTH);
+
+    // Look for "OK+Get:" prefix
+    const std::string_view PREFIX = "OK+Get:";
+    auto value_opt = util::parser::extract_after(response_view, PREFIX);
+
+    if (!value_opt || value_opt->length() < TIMEOUT_LENGTH) {
+        status = hal::UartStatus::ErrError;
+        return;
+    }
+
+    // Extract the timeout string (6 characters)
+    std::string timeout_str(value_opt->substr(0, TIMEOUT_LENGTH));
+    timeout = util::ConnectTimeout(timeout_str);
 }
 
 // Module name operations

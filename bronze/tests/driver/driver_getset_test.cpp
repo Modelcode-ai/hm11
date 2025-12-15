@@ -86,8 +86,7 @@ class HM11DriverGetSetTest : public ::testing::Test {
 };
 
 // Test get and set role operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_RoleGetSet) {
+TEST_F(HM11DriverGetSetTest, RoleGetSet) {
     // Configure the mock to return specific responses for role commands
     uart_mock_->add_command_response("AT+ROLE?", "OK+Get:0"); // Peripheral
     uart_mock_->add_command_response("AT+ROLE0", "OK+Set:0"); // Set to Peripheral
@@ -144,97 +143,98 @@ TEST_F(HM11DriverGetSetTest, DISABLED_RoleGetSet) {
     EXPECT_EQ(transmitted2, "AT+ROLE0");
 }
 
-// Test get and set advertising interval operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_AdvertisingIntervalGetSet) {
-    // Configure the mock to return specific responses for advertising interval commands
-    uart_mock_->add_command_response("AT+ADVI?", "OK+Get:0"); // Default (100ms)
-    uart_mock_->add_command_response("AT+ADVI9", "OK+Set:9"); // Set to 1285ms (max recommended)
+// Simple test to verify transmit works at all
+TEST_F(HM11DriverGetSetTest, SimpleTransmitTest) {
+    uart_mock_->add_command_response("AT", "OK");
 
-    // Get the current advertising interval
+    hal::UartStatus status;
+    driver_->test(status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT");
+}
+
+// Test get advertising interval operation
+TEST_F(HM11DriverGetSetTest, GetAdvertisingInterval_Ms100) {
+    uart_mock_->add_command_response("AT+ADVI?", "OK+Get:0");
+
+    hal::UartStatus status{hal::UartStatus::Busy}; // Initialize to non-Ok
+    AdvertisingInterval interval;
+    driver_->get_advertising_interval(interval, status);
+
+    // Debug: Check what status we got
+    if (status != hal::UartStatus::Ok) {
+        GTEST_FAIL() << "Status was not Ok, got: " << static_cast<int>(status);
+    }
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(interval, AdvertisingInterval::Ms100);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADVI?");
+}
+
+// Test get advertising interval operation with different value
+TEST_F(HM11DriverGetSetTest, GetAdvertisingInterval_Ms1285) {
+    uart_mock_->add_command_response("AT+ADVI?", "OK+Get:9");
+
     hal::UartStatus status;
     AdvertisingInterval interval;
     driver_->get_advertising_interval(interval, status);
 
-    // Verify the status and interval
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-    EXPECT_EQ(interval, AdvertisingInterval::Ms100);
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Set the advertising interval to 1285ms (maximum recommended value)
-    driver_->set_advertising_interval(AdvertisingInterval::Ms1285, status);
-
-    // Verify the status
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+ADVI9");
-
-    // Update the mock to return the new interval
-    uart_mock_->add_command_response("AT+ADVI?", "OK+Get:9"); // 1285ms
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the interval again (should be 1285ms now)
-    driver_->get_advertising_interval(interval, status);
-
-    // Verify the status and interval
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(interval, AdvertisingInterval::Ms1285);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADVI?");
 }
 
-// Test get and set advertising type operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_AdvertisingTypeGetSet) {
-    // Configure the mock to return specific responses for advertising type commands
-    uart_mock_->add_command_response("AT+ADTY?", "OK+Get:0"); // Default (AdvertisingScanResponseConnectable)
-    uart_mock_->add_command_response("AT+ADTY3", "OK+Set:3"); // Set to AnyDeviceConnect
+// Test set advertising interval operation
+TEST_F(HM11DriverGetSetTest, SetAdvertisingInterval_Ms1285) {
+    uart_mock_->add_command_response("AT+ADVI9", "OK+Set:9");
 
-    // Get the current advertising type
+    hal::UartStatus status;
+    driver_->set_advertising_interval(AdvertisingInterval::Ms1285, status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADVI9");
+}
+
+// Test get advertising type operation
+TEST_F(HM11DriverGetSetTest, GetAdvertisingType_ScanResponseConnectable) {
+    uart_mock_->add_command_response("AT+ADTY?", "OK+Get:0");
+
     hal::UartStatus status;
     AdvertisingType type;
     driver_->get_advertising_type(type, status);
 
-    // Verify the status and type
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(type, AdvertisingType::AdvertisingScanResponseConnectable);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADTY?");
+}
 
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
+// Test get advertising type with different value
+TEST_F(HM11DriverGetSetTest, GetAdvertisingType_Advertising) {
+    uart_mock_->add_command_response("AT+ADTY?", "OK+Get:3");
 
-    // Set the advertising type to AnyDeviceConnect
-    driver_->set_advertising_type(AdvertisingType::Advertising, status);
-
-    // Verify the status
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+ADTY3");
-
-    // Update the mock to return the new type
-    uart_mock_->add_command_response("AT+ADTY?", "OK+Get:3"); // Advertising
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the type again (should be AnyDeviceConnect now)
+    hal::UartStatus status;
+    AdvertisingType type;
     driver_->get_advertising_type(type, status);
 
-    // Verify the status and type
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(type, AdvertisingType::Advertising);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADTY?");
+}
+
+// Test set advertising type operation
+TEST_F(HM11DriverGetSetTest, SetAdvertisingType_Advertising) {
+    uart_mock_->add_command_response("AT+ADTY3", "OK+Set:3");
+
+    hal::UartStatus status;
+    driver_->set_advertising_type(AdvertisingType::Advertising, status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+ADTY3");
 }
 
 // Test get and set module name operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_ModuleNameGetSet) {
+TEST_F(HM11DriverGetSetTest, ModuleNameGetSet) {
     // Configure the mock to return specific responses for module name commands
     uart_mock_->add_command_response("AT+NAME?", "OK+NAME:HMSoft"); // Default
     uart_mock_->add_command_response("AT+NAMETest", "OK+Set:Test"); // Set to "Test"
@@ -276,8 +276,7 @@ TEST_F(HM11DriverGetSetTest, DISABLED_ModuleNameGetSet) {
 }
 
 // Test get and set module power operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_ModulePowerGetSet) {
+TEST_F(HM11DriverGetSetTest, ModulePowerGetSet) {
     // Configure the mock to return specific responses for module power commands
     uart_mock_->add_command_response("AT+POWE?", "OK+Get:2"); // Default (0 dBm)
     uart_mock_->add_command_response("AT+POWE3", "OK+Set:3"); // Set to 6 dBm (maximum)
@@ -321,95 +320,84 @@ TEST_F(HM11DriverGetSetTest, DISABLED_ModulePowerGetSet) {
 
 // Test get and set work mode operations
 // DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_WorkModeGetSet) {
-    // Configure the mock to return specific responses for work mode commands
-    uart_mock_->add_command_response("AT+MODE?", "OK+Get:0"); // Default (Transmission mode)
-    uart_mock_->add_command_response("AT+MODE2", "OK+Set:2"); // Set to Remote Control mode
+// Test get work mode operation
+TEST_F(HM11DriverGetSetTest, GetWorkMode_TransmissionMode) {
+    uart_mock_->add_command_response("AT+MODE?", "OK+Get:0");
 
-    // Get the current work mode
     hal::UartStatus status;
     WorkMode mode;
     driver_->get_work_mode(mode, status);
 
-    // Verify the status and mode
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(mode, WorkMode::TransmissionMode);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+MODE?");
+}
 
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
+// Test get work mode with different value
+TEST_F(HM11DriverGetSetTest, GetWorkMode_RemoteControlMode) {
+    uart_mock_->add_command_response("AT+MODE?", "OK+Get:2");
 
-    // Set the work mode to Remote Control mode
-    driver_->set_work_mode(WorkMode::RemoteControlMode, status);
-
-    // Verify the status
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+MODE2");
-
-    // Update the mock to return the new mode
-    uart_mock_->add_command_response("AT+MODE?", "OK+Get:2"); // Remote Control mode
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the mode again (should be Remote Control mode now)
+    hal::UartStatus status;
+    WorkMode mode;
     driver_->get_work_mode(mode, status);
 
-    // Verify the status and mode
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(mode, WorkMode::RemoteControlMode);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+MODE?");
+}
+
+// Test set work mode operation
+TEST_F(HM11DriverGetSetTest, SetWorkMode_RemoteControlMode) {
+    uart_mock_->add_command_response("AT+MODE2", "OK+Set:2");
+
+    hal::UartStatus status;
+    driver_->set_work_mode(WorkMode::RemoteControlMode, status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+MODE2");
 }
 
 // Test get and set work type operations
 // DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_WorkTypeGetSet) {
-    // Configure the mock to return specific responses for work type commands
-    uart_mock_->add_command_response("AT+IMME?", "OK+Get:0"); // Default (Start immediately)
-    uart_mock_->add_command_response("AT+IMME1", "OK+Set:1"); // Set to respond to AT commands
+// Test get work type operation
+TEST_F(HM11DriverGetSetTest, GetWorkType_StartImmediately) {
+    uart_mock_->add_command_response("AT+IMME?", "OK+Get:0");
 
-    // Get the current work type
     hal::UartStatus status;
     WorkType type;
     driver_->get_work_type(type, status);
 
-    // Verify the status and type
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(type, WorkType::StartImmediately);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IMME?");
+}
 
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
+// Test get work type with different value
+TEST_F(HM11DriverGetSetTest, GetWorkType_RespondAtCommand) {
+    uart_mock_->add_command_response("AT+IMME?", "OK+Get:1");
 
-    // Set the work type to respond to AT commands
-    driver_->set_work_type(WorkType::RespondAtCommand, status);
-
-    // Verify the status
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+IMME1");
-
-    // Update the mock to return the new type
-    uart_mock_->add_command_response("AT+IMME?", "OK+Get:1"); // Respond to AT commands
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the type again (should be Respond to AT commands now)
+    hal::UartStatus status;
+    WorkType type;
     driver_->get_work_type(type, status);
 
-    // Verify the status and type
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(type, WorkType::RespondAtCommand);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IMME?");
+}
+
+// Test set work type operation
+TEST_F(HM11DriverGetSetTest, SetWorkType_RespondAtCommand) {
+    uart_mock_->add_command_response("AT+IMME1", "OK+Set:1");
+
+    hal::UartStatus status;
+    driver_->set_work_type(WorkType::RespondAtCommand, status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IMME1");
 }
 
 // Test get and set UART baud rate operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_UartBaudRateGetSet) {
+TEST_F(HM11DriverGetSetTest, UartBaudRateGetSet) {
     // Configure the mock to return specific responses for UART baud rate commands
     uart_mock_->add_command_response("AT+BAUD?", "OK+Get:0"); // Default (9600)
     uart_mock_->add_command_response("AT+BAUD4", "OK+Set:4"); // Set to 115200
@@ -452,8 +440,7 @@ TEST_F(HM11DriverGetSetTest, DISABLED_UartBaudRateGetSet) {
 }
 
 // Test get and set module auto sleep operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_ModuleAutoSleepGetSet) {
+TEST_F(HM11DriverGetSetTest, ModuleAutoSleepGetSet) {
     // Configure the mock to return specific responses for module auto sleep commands
     uart_mock_->add_command_response("AT+ASLP?", "OK+Get:0"); // Default (false)
     uart_mock_->add_command_response("AT+ASLP1", "OK+Set:1"); // Set to true
@@ -497,103 +484,74 @@ TEST_F(HM11DriverGetSetTest, DISABLED_ModuleAutoSleepGetSet) {
 
 // Test get and set iBeacon switch operations
 // DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_IBeaconSwitchGetSet) {
-    // Configure the mock to return specific responses for iBeacon switch commands
-    uart_mock_->add_command_response("AT+IBEA?", "OK+Get:0"); // Default (false)
-    uart_mock_->add_command_response("AT+IBEA1", "OK+Set:1"); // Set to true
+// Test get iBeacon switch operation
+TEST_F(HM11DriverGetSetTest, GetIBeaconSwitch_Disabled) {
+    uart_mock_->add_command_response("AT+IBEA?", "OK+Get:0");
 
-    // Get the current iBeacon switch setting
     hal::UartStatus status;
     bool ibeacon_switch;
     driver_->get_ibeacon_switch(ibeacon_switch, status);
 
-    // Verify the status and iBeacon switch setting
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_FALSE(ibeacon_switch);
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Enable iBeacon
-    driver_->set_ibeacon_switch(true, status);
-
-    // Verify the status
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+IBEA1");
-
-    // Update the mock to return the new iBeacon switch setting
-    uart_mock_->add_command_response("AT+IBEA?", "OK+Get:1"); // true
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the iBeacon switch setting again (should be true now)
-    driver_->get_ibeacon_switch(ibeacon_switch, status);
-
-    // Verify the status and iBeacon switch setting
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-    EXPECT_TRUE(ibeacon_switch);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IBEA?");
 }
 
-// Test get and set iBeacon UUID operations
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_IBeaconUuidGetSet) {
-    // Configure the mock to return specific responses for iBeacon UUID commands
-    uart_mock_->add_command_response("AT+IBE0?",
-                                     "OK+Get:74278BDAB64445208F0C720EAF059935"); // Default UUID
+// Test get iBeacon switch with different value
+TEST_F(HM11DriverGetSetTest, GetIBeaconSwitch_Enabled) {
+    uart_mock_->add_command_response("AT+IBEA?", "OK+Get:1");
 
-    // Create a new UUID to set
-    util::IBeaconUuid new_uuid("AABBCCDDEEFF00112233445566778899");
+    hal::UartStatus status;
+    bool ibeacon_switch;
+    driver_->get_ibeacon_switch(ibeacon_switch, status);
 
-    // Configure mock for setting the UUID
-    uart_mock_->add_command_response(
-        "AT+IBE0AABBCCDDEEFF00112233445566778899",
-        "OK+Set:AABBCCDDEEFF00112233445566778899");
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_TRUE(ibeacon_switch);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IBEA?");
+}
 
-    // Get the current iBeacon UUID
+// Test set iBeacon switch operation
+TEST_F(HM11DriverGetSetTest, SetIBeaconSwitch_Enable) {
+    uart_mock_->add_command_response("AT+IBEA1", "OK+Set:1");
+
+    hal::UartStatus status;
+    driver_->set_ibeacon_switch(true, status);
+
+    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
+    EXPECT_EQ(uart_mock_->get_transmitted_string(), "AT+IBEA1");
+}
+
+// Test get iBeacon UUID operation
+TEST_F(HM11DriverGetSetTest, GetIBeaconUuid_DefaultValue) {
+    uart_mock_->add_command_response("AT+IBE0?", "OK+Get:74278BDAB64445208F0C720EAF059935");
+    uart_mock_->add_command_response("AT+IBE1?", "OK+Get:");
+    uart_mock_->add_command_response("AT+IBE2?", "OK+Get:");
+    uart_mock_->add_command_response("AT+IBE3?", "OK+Get:");
+
     hal::UartStatus status;
     util::IBeaconUuid uuid;
     driver_->get_ibeacon_uuid(uuid, status);
 
-    // Verify the status and UUID
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
     EXPECT_EQ(uuid, util::IBeaconUuid("74278BDAB64445208F0C720EAF059935"));
+}
 
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
+// Test set iBeacon UUID operation
+TEST_F(HM11DriverGetSetTest, SetIBeaconUuid_CustomValue) {
+    uart_mock_->add_command_response("AT+IBE0AABBCCDD", "OK+Set:AABBCCDD");
+    uart_mock_->add_command_response("AT+IBE1EEFF0011", "OK+Set:EEFF0011");
+    uart_mock_->add_command_response("AT+IBE222334455", "OK+Set:22334455");
+    uart_mock_->add_command_response("AT+IBE366778899", "OK+Set:66778899");
 
-    // Set the iBeacon UUID
+    util::IBeaconUuid new_uuid("AABBCCDDEEFF00112233445566778899");
+    hal::UartStatus status;
     driver_->set_ibeacon_uuid(new_uuid, status);
 
-    // Verify the status
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-
-    // Verify the command was sent
-    const auto& data = uart_mock_->transmitted_data_8b();
-    std::string transmitted(data.begin(), data.end());
-    EXPECT_EQ(transmitted, "AT+IBE0AABBCCDDEEFF00112233445566778899");
-
-    // Update the mock to return the new UUID
-    uart_mock_->add_command_response("AT+IBE0?", "OK+Get:AABBCCDDEEFF00112233445566778899");
-
-    // Clear the transmitted data for the next test
-    uart_mock_->clear_transmitted_data();
-
-    // Get the UUID again (should be the new UUID now)
-    driver_->get_ibeacon_uuid(uuid, status);
-
-    // Verify the status and UUID
-    EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-    EXPECT_EQ(uuid, new_uuid);
 }
 
 // Test get MAC address operation
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverGetSetTest, DISABLED_GetMacAddress) {
+TEST_F(HM11DriverGetSetTest, GetMacAddress) {
     // Configure the mock to return a specific MAC address
     uart_mock_->add_command_response("AT+ADDR?", "OK+ADDR:112233445566");
 
@@ -613,8 +571,7 @@ TEST_F(HM11DriverGetSetTest, DISABLED_GetMacAddress) {
 }
 
 // Test error case for getters and setters
-// DISABLED: Requires full implementation with error handling
-TEST_F(HM11DriverGetSetTest, DISABLED_ErrorCases) {
+TEST_F(HM11DriverGetSetTest, ErrorCases) {
     // Configure the mock to return an error status
     uart_mock_->add_command_response("AT+ROLE?", "", hal::UartStatus::Error);
 

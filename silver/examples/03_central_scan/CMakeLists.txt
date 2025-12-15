@@ -1,7 +1,7 @@
 # HM11 Central Device Discovery Example
 
 # Create the example executable
-add_executable(03_central_scan main.cpp ../../src/discovery.cpp)
+add_executable(03_central_scan main.cpp)
 
 # Link required libraries
 target_link_libraries(03_central_scan

@@ -1,15 +1,13 @@
 # Platform tests
 
-add_library(hm11_platform_tests OBJECT
+# Create test executable for alignment tests
+add_hm11_test(alignment_test
     alignment_test.cpp
+    ${CMAKE_SOURCE_DIR}/tests/test_main.cpp
 )
 
-target_include_directories(hm11_platform_tests
+# Add sources for cache tests
+target_sources(alignment_test
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-target_link_libraries(hm11_platform_tests
-    PRIVATE
-    GTest::gtest
+    ${CMAKE_SOURCE_DIR}/src/platform/cache.cpp
 )

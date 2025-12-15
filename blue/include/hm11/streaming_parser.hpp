@@ -15,7 +15,6 @@
 #include <array>
 #include <cstdint>
 #include <functional>
-#include <string>
 #include <string_view>
 
 namespace hm11 {
@@ -24,20 +23,32 @@ namespace hm11 {
  * @brief Information about a discovered Bluetooth device.
  */
 struct DiscoveredDevice {
-    std::array<char, 12> mac{};  // MAC address (12 hex chars, e.g., "001122334455")
-    std::string name;            // Device name (variable length)
-    std::string rssi;            // RSSI value as string (variable length)
+    std::array<char, 12> mac{};   // MAC address (12 hex chars, e.g., "001122334455")
+    std::array<char, 64> name{};  // Device name (fixed buffer)
+    std::size_t name_len{0};      // Actual name length
+    std::array<char, 8> rssi{};   // RSSI value as string (fixed buffer)
+    std::size_t rssi_len{0};      // Actual RSSI length
 
     DiscoveredDevice() = default;
 
     void clear() {
         mac.fill('\0');
-        name.clear();
-        rssi.clear();
+        name.fill('\0');
+        name_len = 0;
+        rssi.fill('\0');
+        rssi_len = 0;
     }
 
     bool has_mac() const {
         return mac[0] != '\0';
+    }
+
+    std::string_view name_view() const noexcept {
+        return std::string_view(name.data(), name_len);
+    }
+
+    std::string_view rssi_view() const noexcept {
+        return std::string_view(rssi.data(), rssi_len);
     }
 };
 
@@ -116,6 +127,10 @@ public:
     void flush();
 
 private:
+    static constexpr std::size_t BUFFER_SIZE = 1024;    // Conservative buffer size
+    static constexpr std::size_t MAX_NAME_SIZE = 64;    // Maximum device name length
+    static constexpr std::size_t MAX_RSSI_SIZE = 8;     // Maximum RSSI string length
+
     /**
      * @brief Check if buffer starts with a prefix at current position.
      */
@@ -142,11 +157,19 @@ private:
      */
     void invoke_callback();
 
+    /**
+     * @brief Get current buffer view.
+     */
+    std::string_view buffer_view() const noexcept {
+        return std::string_view(m_buffer.data(), m_buffer_size);
+    }
+
     DiscoveredCallback m_callback;
     void* m_user_data;
     DiscoveredDevice m_current_device;
     State m_state{State::Selection};
-    std::string m_buffer;  // Accumulates partial data between parse() calls
+    std::array<char, BUFFER_SIZE> m_buffer{};  // Fixed-size buffer for partial data
+    std::size_t m_buffer_size{0};              // Current data size in buffer
 };
 
 } // namespace hm11

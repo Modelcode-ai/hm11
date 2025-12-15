@@ -11,7 +11,7 @@ using namespace hm11;
 
 TEST(HM11DriverModuleConfigTest, SetWorkType_StartImmediately) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_work_type(WorkType::StartImmediately, status));
@@ -20,7 +20,7 @@ TEST(HM11DriverModuleConfigTest, SetWorkType_StartImmediately) {
 
 TEST(HM11DriverModuleConfigTest, SetWorkType_RespondATCommand) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_work_type(WorkType::RespondATCommand, status));
@@ -29,7 +29,7 @@ TEST(HM11DriverModuleConfigTest, SetWorkType_RespondATCommand) {
 
 TEST(HM11DriverModuleConfigTest, GetWorkType) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     WorkType type = WorkType::StartImmediately;
     Status status = Status::Ok;
@@ -40,7 +40,7 @@ TEST(HM11DriverModuleConfigTest, GetWorkType) {
 
 TEST(HM11DriverModuleConfigTest, SetWorkMode_TransmissionMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_work_mode(WorkMode::TransmissionMode, status));
@@ -49,7 +49,7 @@ TEST(HM11DriverModuleConfigTest, SetWorkMode_TransmissionMode) {
 
 TEST(HM11DriverModuleConfigTest, SetWorkMode_PIOCollectionMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_work_mode(WorkMode::PIOCollectionMode, status));
@@ -58,7 +58,7 @@ TEST(HM11DriverModuleConfigTest, SetWorkMode_PIOCollectionMode) {
 
 TEST(HM11DriverModuleConfigTest, SetWorkMode_RemoteControlMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "2\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "2\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_work_mode(WorkMode::RemoteControlMode, status));
@@ -67,7 +67,7 @@ TEST(HM11DriverModuleConfigTest, SetWorkMode_RemoteControlMode) {
 
 TEST(HM11DriverModuleConfigTest, GetWorkMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "2\r\n");
     HM11Driver driver(uart);
     WorkMode mode = WorkMode::TransmissionMode;
     Status status = Status::Ok;
@@ -78,7 +78,7 @@ TEST(HM11DriverModuleConfigTest, GetWorkMode) {
 
 TEST(HM11DriverModuleConfigTest, SetNotifyMode_WithoutAddress) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_notify_mode(NotifyMode::WithoutAddress, status));
@@ -87,7 +87,7 @@ TEST(HM11DriverModuleConfigTest, SetNotifyMode_WithoutAddress) {
 
 TEST(HM11DriverModuleConfigTest, SetNotifyMode_WithAddress) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_notify_mode(NotifyMode::WithAddress, status));
@@ -96,7 +96,7 @@ TEST(HM11DriverModuleConfigTest, SetNotifyMode_WithAddress) {
 
 TEST(HM11DriverModuleConfigTest, GetNotifyMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     NotifyMode mode = NotifyMode::WithoutAddress;
     Status status = Status::Ok;
@@ -107,7 +107,7 @@ TEST(HM11DriverModuleConfigTest, GetNotifyMode) {
 
 TEST(HM11DriverModuleConfigTest, SetModuleName) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "HM11_TEST\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "HM11_TEST\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_module_name("HM11_TEST", status));
@@ -116,9 +116,9 @@ TEST(HM11DriverModuleConfigTest, SetModuleName) {
 
 TEST(HM11DriverModuleConfigTest, GetModuleName) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "HM11_TEST\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "HM11_TEST\r\n");
     HM11Driver driver(uart);
-    std::string name;
+    std::string_view name;
     Status status = Status::Ok;
     EXPECT_TRUE(driver.get_module_name(name, status));
     EXPECT_EQ(name, "HM11_TEST");
@@ -127,7 +127,7 @@ TEST(HM11DriverModuleConfigTest, GetModuleName) {
 
 TEST(HM11DriverModuleConfigTest, SetNotifyInformation_True) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_notify_information(true, status));
@@ -136,7 +136,7 @@ TEST(HM11DriverModuleConfigTest, SetNotifyInformation_True) {
 
 TEST(HM11DriverModuleConfigTest, SetNotifyInformation_False) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_notify_information(false, status));
@@ -145,7 +145,7 @@ TEST(HM11DriverModuleConfigTest, SetNotifyInformation_False) {
 
 TEST(HM11DriverModuleConfigTest, GetNotifyInformation) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     bool notify = false;
     Status status = Status::Ok;
@@ -156,7 +156,7 @@ TEST(HM11DriverModuleConfigTest, GetNotifyInformation) {
 
 TEST(HM11DriverModuleConfigTest, SetModuleRXGain_No) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_module_rx_gain(RXGain::No, status));
@@ -165,7 +165,7 @@ TEST(HM11DriverModuleConfigTest, SetModuleRXGain_No) {
 
 TEST(HM11DriverModuleConfigTest, SetModuleRXGain_Open) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_module_rx_gain(RXGain::Open, status));
@@ -174,7 +174,7 @@ TEST(HM11DriverModuleConfigTest, SetModuleRXGain_Open) {
 
 TEST(HM11DriverModuleConfigTest, GetModuleRXGain) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     RXGain gain = RXGain::No;
     Status status = Status::Ok;
@@ -187,7 +187,7 @@ TEST(HM11DriverModuleConfigTest, GetModuleRXGain) {
 
 TEST(HM11DriverModuleConfigTest, SetPIOOutputStatus_PIO1_High) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_pio_output_status(util::PioNumber(1), PIOOutput::High, status));
@@ -196,7 +196,7 @@ TEST(HM11DriverModuleConfigTest, SetPIOOutputStatus_PIO1_High) {
 
 TEST(HM11DriverModuleConfigTest, SetPIOOutputStatus_PIO1_Low) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_pio_output_status(util::PioNumber(1), PIOOutput::Low, status));
@@ -209,6 +209,7 @@ TEST(HM11DriverModuleConfigTest, SetPIOOutputStatus_PIO2_High) {
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_pio_output_status(util::PioNumber(2), PIOOutput::High, status));
+    // High enum value is 1, formatted as "1" by NumericFormatter
     EXPECT_EQ(uart.get_transmitted_data(), "AT+PIO21\r\n");
 }
 
@@ -223,7 +224,7 @@ TEST(HM11DriverModuleConfigTest, SetPIOOutputStatus_PIO3_Low) {
 
 TEST(HM11DriverModuleConfigTest, GetPIOOutputStatus_PIO1) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     PIOOutput output = PIOOutput::Low;
     Status status = Status::Ok;
@@ -245,7 +246,7 @@ TEST(HM11DriverModuleConfigTest, GetPIOOutputStatus_PIO2) {
 
 TEST(HM11DriverModuleConfigTest, GetPIOsOutputStatus) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1A3\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1A3\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("000");
     Status status = Status::Ok;
@@ -256,7 +257,7 @@ TEST(HM11DriverModuleConfigTest, GetPIOsOutputStatus) {
 
 TEST(HM11DriverModuleConfigTest, SetPIOsOutputStatus) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "2B4\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "2B4\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("2B4");
     Status status = Status::Ok;
@@ -266,7 +267,7 @@ TEST(HM11DriverModuleConfigTest, SetPIOsOutputStatus) {
 
 TEST(HM11DriverModuleConfigTest, SetPIOCollectionRate) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "50\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "50\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_pio_collection_rate(util::PioCollectionRate(50), status));
@@ -275,7 +276,7 @@ TEST(HM11DriverModuleConfigTest, SetPIOCollectionRate) {
 
 TEST(HM11DriverModuleConfigTest, GetPIOCollectionRate) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "25\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "25\r\n");
     HM11Driver driver(uart);
     util::PioCollectionRate rate(0);
     Status status = Status::Ok;
@@ -286,7 +287,7 @@ TEST(HM11DriverModuleConfigTest, GetPIOCollectionRate) {
 
 TEST(HM11DriverModuleConfigTest, SetPowerPinOutput) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "123\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "123\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("123");
     Status status = Status::Ok;
@@ -296,7 +297,7 @@ TEST(HM11DriverModuleConfigTest, SetPowerPinOutput) {
 
 TEST(HM11DriverModuleConfigTest, GetPowerPinOutput) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "ABC\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "ABC\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("000");
     Status status = Status::Ok;
@@ -307,7 +308,7 @@ TEST(HM11DriverModuleConfigTest, GetPowerPinOutput) {
 
 TEST(HM11DriverModuleConfigTest, SetConnectPinOutput) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "456\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "456\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("456");
     Status status = Status::Ok;
@@ -317,7 +318,7 @@ TEST(HM11DriverModuleConfigTest, SetConnectPinOutput) {
 
 TEST(HM11DriverModuleConfigTest, GetConnectPinOutput) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "DEF\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "DEF\r\n");
     HM11Driver driver(uart);
     util::PIONumbers pios("000");
     Status status = Status::Ok;
@@ -330,7 +331,7 @@ TEST(HM11DriverModuleConfigTest, GetConnectPinOutput) {
 
 TEST(HM11DriverModuleConfigTest, SetBondMode_NotNeedPIN) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_bond_mode(BondMode::NotNeedPIN, status));
@@ -339,7 +340,7 @@ TEST(HM11DriverModuleConfigTest, SetBondMode_NotNeedPIN) {
 
 TEST(HM11DriverModuleConfigTest, SetBondMode_AuthWithPIN) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "2\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "2\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_bond_mode(BondMode::AuthWithPIN, status));
@@ -348,7 +349,7 @@ TEST(HM11DriverModuleConfigTest, SetBondMode_AuthWithPIN) {
 
 TEST(HM11DriverModuleConfigTest, GetBondMode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "3\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "3\r\n");
     HM11Driver driver(uart);
     BondMode mode = BondMode::NotNeedPIN;
     Status status = Status::Ok;
@@ -359,7 +360,7 @@ TEST(HM11DriverModuleConfigTest, GetBondMode) {
 
 TEST(HM11DriverModuleConfigTest, SetPINCode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "123456\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "123456\r\n");
     HM11Driver driver(uart);
     util::PINType pin("123456");
     Status status = Status::Ok;
@@ -369,7 +370,7 @@ TEST(HM11DriverModuleConfigTest, SetPINCode) {
 
 TEST(HM11DriverModuleConfigTest, GetPINCode) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "654321\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "654321\r\n");
     HM11Driver driver(uart);
     util::PINType pin("000000");
     Status status = Status::Ok;

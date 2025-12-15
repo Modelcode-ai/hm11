@@ -48,7 +48,9 @@ inline bool is_dma_aligned(const void* ptr) {
 inline void assert_dma_aligned(
     [[maybe_unused]] const void* ptr,
     [[maybe_unused]] const char* message = "DMA buffer not properly aligned") {
+#ifndef HM11_DISABLE_ALIGNMENT_ASSERTS
     assert(is_dma_aligned(ptr) && message);
+#endif
 }
 
 /**

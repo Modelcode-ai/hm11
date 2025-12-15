@@ -262,22 +262,22 @@ TEST_F(UARTTest, Error_Handling_Works) {
     UartStatus status;
 
     // Configure mock to return an error
-    mock_8bit.config.status_to_return = UartStatus::Err_Error;
+    mock_8bit.config.status_to_return = UartStatus::ErrError;
 
     // Transmit data
     mock_8bit.transmit(tx_data, status);
 
     // Verify results
-    EXPECT_EQ(status, UartStatus::Err_Error);
+    EXPECT_EQ(status, UartStatus::ErrError);
 
     // Configure mock to return a timeout
-    mock_8bit.config.status_to_return = UartStatus::Err_Timeout;
+    mock_8bit.config.status_to_return = UartStatus::ErrTimeout;
 
     // Transmit data
     mock_8bit.transmit(tx_data, status);
 
     // Verify results
-    EXPECT_EQ(status, UartStatus::Err_Timeout);
+    EXPECT_EQ(status, UartStatus::ErrTimeout);
 }
 
 // Test custom timeout
@@ -325,6 +325,166 @@ TEST_F(UARTTest, Polymorphic_Usage_Works) {
 
     // Verify that the data size is correct
     EXPECT_EQ(uart_port->data_size(), UartDataSize::DataSize8b);
+}
+
+// Test UartData8b construction from pointer and length
+TEST_F(UARTTest, UartData8b_Construction_From_Pointer) {
+    std::array<UInt8, 5> buffer = {0x10, 0x20, 0x30, 0x40, 0x50};
+    UartData8b data(buffer.data(), buffer.size());
+
+    EXPECT_EQ(data.size(), 5u);
+    EXPECT_EQ(data[0], 0x10);
+    EXPECT_EQ(data[4], 0x50);
+}
+
+// Test UartData9b construction from pointer and length
+TEST_F(UARTTest, UartData9b_Construction_From_Pointer) {
+    std::array<UInt16, 3> buffer = {0x100, 0x200, 0x300};
+    UartData9b data(buffer.data(), buffer.size());
+
+    EXPECT_EQ(data.size(), 3u);
+    EXPECT_EQ(data[0], 0x100);
+    EXPECT_EQ(data[2], 0x300);
+}
+
+// Test UartData8b data() method
+TEST_F(UARTTest, UartData8b_Data_Method) {
+    std::array<UInt8, 3> buffer = {0x11, 0x22, 0x33};
+    UartData8b data(buffer);
+
+    UInt8* ptr = data.data();
+    EXPECT_NE(ptr, nullptr);
+    EXPECT_EQ(ptr[0], 0x11);
+    EXPECT_EQ(ptr[2], 0x33);
+}
+
+// Test UartData9b data() method
+TEST_F(UARTTest, UartData9b_Data_Method) {
+    std::array<UInt16, 2> buffer = {0x111, 0x222};
+    UartData9b data(buffer);
+
+    UInt16* ptr = data.data();
+    EXPECT_NE(ptr, nullptr);
+    EXPECT_EQ(ptr[0], 0x111);
+    EXPECT_EQ(ptr[1], 0x222);
+}
+
+// Test UartData8b const data() method
+TEST_F(UARTTest, UartData8b_Const_Data_Method) {
+    std::array<UInt8, 3> buffer = {0xAA, 0xBB, 0xCC};
+    const UartData8b data(buffer);
+
+    const UInt8* ptr = data.data();
+    EXPECT_NE(ptr, nullptr);
+    EXPECT_EQ(ptr[0], 0xAA);
+    EXPECT_EQ(ptr[2], 0xCC);
+}
+
+// Test UartData9b const data() method
+TEST_F(UARTTest, UartData9b_Const_Data_Method) {
+    std::array<UInt16, 2> buffer = {0x111, 0x222};
+    const UartData9b data(buffer);
+
+    const UInt16* ptr = data.data();
+    EXPECT_NE(ptr, nullptr);
+    EXPECT_EQ(ptr[0], 0x111);
+    EXPECT_EQ(ptr[1], 0x222);
+}
+
+// Test UartData8b const operator[]
+TEST_F(UARTTest, UartData8b_Const_Operator) {
+    std::array<UInt8, 4> buffer = {0x10, 0x20, 0x30, 0x40};
+    const UartData8b data(buffer);
+
+    EXPECT_EQ(data[0], 0x10);
+    EXPECT_EQ(data[3], 0x40);
+}
+
+// Test UartData9b const operator[]
+TEST_F(UARTTest, UartData9b_Const_Operator) {
+    std::array<UInt16, 3> buffer = {0x100, 0x200, 0x300};
+    const UartData9b data(buffer);
+
+    EXPECT_EQ(data[0], 0x100);
+    EXPECT_EQ(data[2], 0x300);
+}
+
+// Test UartData8b const iterators
+TEST_F(UARTTest, UartData8b_Const_Iterators) {
+    std::array<UInt8, 3> buffer = {0x11, 0x22, 0x33};
+    const UartData8b data(buffer);
+
+    std::vector<UInt8> collected;
+    for (auto it = data.begin(); it != data.end(); ++it) {
+        collected.push_back(*it);
+    }
+
+    EXPECT_EQ(collected.size(), 3u);
+    EXPECT_EQ(collected[0], 0x11);
+    EXPECT_EQ(collected[2], 0x33);
+}
+
+// Test UartData9b const iterators
+TEST_F(UARTTest, UartData9b_Const_Iterators) {
+    std::array<UInt16, 2> buffer = {0x111, 0x222};
+    const UartData9b data(buffer);
+
+    std::vector<UInt16> collected;
+    for (auto it = data.begin(); it != data.end(); ++it) {
+        collected.push_back(*it);
+    }
+
+    EXPECT_EQ(collected.size(), 2u);
+    EXPECT_EQ(collected[0], 0x111);
+    EXPECT_EQ(collected[1], 0x222);
+}
+
+// Test UartData8b modifying elements
+TEST_F(UARTTest, UartData8b_Element_Modification) {
+    std::array<UInt8, 3> buffer = {0x00, 0x00, 0x00};
+    UartData8b data(buffer);
+
+    data[0] = 0xAA;
+    data[1] = 0xBB;
+    data[2] = 0xCC;
+
+    EXPECT_EQ(buffer[0], 0xAA);
+    EXPECT_EQ(buffer[1], 0xBB);
+    EXPECT_EQ(buffer[2], 0xCC);
+}
+
+// Test UartData9b modifying elements
+TEST_F(UARTTest, UartData9b_Element_Modification) {
+    std::array<UInt16, 2> buffer = {0x000, 0x000};
+    UartData9b data(buffer);
+
+    data[0] = 0x123;
+    data[1] = 0x456;
+
+    EXPECT_EQ(buffer[0], 0x123);
+    EXPECT_EQ(buffer[1], 0x456);
+}
+
+// Test UartData8b construction from span
+TEST_F(UARTTest, UartData8b_Construction_From_Span) {
+    std::array<UInt8, 4> buffer = {0x01, 0x02, 0x03, 0x04};
+    UInt8Span span(buffer);
+    UartData8b data(span);
+
+    EXPECT_EQ(data.size(), 4u);
+    EXPECT_EQ(data[0], 0x01);
+    EXPECT_EQ(data[3], 0x04);
+}
+
+// Test UartData9b construction from span
+TEST_F(UARTTest, UartData9b_Construction_From_Span) {
+    std::array<UInt16, 3> buffer = {0x101, 0x202, 0x303};
+    UInt16Span span(buffer);
+    UartData9b data(span);
+
+    EXPECT_EQ(data.size(), 3u);
+    EXPECT_EQ(data[0], 0x101);
+    EXPECT_EQ(data[2], 0x303);
 }
 
 } // namespace

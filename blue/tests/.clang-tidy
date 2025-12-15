@@ -1,0 +1,2 @@
+---
+Checks: '-readability-identifier-naming,-readability-convert-member-functions-to-static,-modernize-return-braced-init-list'
