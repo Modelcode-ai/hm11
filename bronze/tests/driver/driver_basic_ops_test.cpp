@@ -184,10 +184,10 @@ TEST_F(HM11DriverBasicOpsTest, WakeUpOperation) {
 }
 
 // Test the software_version operation
-// DISABLED: Requires full implementation with AT command parsing and response handling
-TEST_F(HM11DriverBasicOpsTest, DISABLED_SoftwareVersionOperation) {
+TEST_F(HM11DriverBasicOpsTest, SoftwareVersionOperation) {
     // Configure the mock to return a version string
-    uart_mock_->add_command_response("AT+VERSION", "HMSoft V1.0");
+    // HM-11 firmware versions are hex numbers like V545, V540, etc.
+    uart_mock_->add_command_response("AT+VERSION", "HMSoft V545");
 
     // Call the software_version method
     util::VersionType version;
@@ -202,10 +202,8 @@ TEST_F(HM11DriverBasicOpsTest, DISABLED_SoftwareVersionOperation) {
     std::string transmitted(data.begin(), data.end());
     EXPECT_EQ(transmitted, "AT+VERSION");
 
-    // Verify the version was extracted correctly
-    // Note: The actual extraction depends on the implementation
-    // This is a simplified test assuming a direct mapping
-    EXPECT_EQ(version, util::VersionType("V1.0"));
+    // Verify the version was extracted correctly (should be "0545" - 4 hex chars)
+    EXPECT_EQ(version, util::VersionType("0545"));
 }
 
 // Test the disconnect operation
@@ -245,12 +243,11 @@ TEST_F(HM11DriverBasicOpsTest, StartWorkingOperation) {
 }
 
 // Test multiple operations in sequence
-// DISABLED: Requires full implementation with AT command parsing
-TEST_F(HM11DriverBasicOpsTest, DISABLED_MultipleOperations) {
+TEST_F(HM11DriverBasicOpsTest, MultipleOperations) {
     // Configure the mock to return specific responses for each command
     uart_mock_->add_command_response("AT", "OK");
     uart_mock_->add_command_response("AT+RESET", "OK");
-    uart_mock_->add_command_response("AT+VERSION", "HMSoft V1.0");
+    uart_mock_->add_command_response("AT+VERSION", "HMSoft V545");
 
     // Perform multiple operations in sequence
     hal::UartStatus status;
@@ -273,7 +270,7 @@ TEST_F(HM11DriverBasicOpsTest, DISABLED_MultipleOperations) {
     util::VersionType version;
     driver_->software_version(version, status);
     EXPECT_UART_STATUS_EQ(hal::UartStatus::Ok, status);
-    EXPECT_EQ(version, util::VersionType("V1.0"));
+    EXPECT_EQ(version, util::VersionType("0545"));
 }
 
 // Test operations with timeouts
@@ -290,8 +287,7 @@ TEST_F(HM11DriverBasicOpsTest, OperationWithTimeout) {
 }
 
 // Test operations with bad responses
-// DISABLED: Requires full implementation with error handling
-TEST_F(HM11DriverBasicOpsTest, DISABLED_OperationWithBadResponse) {
+TEST_F(HM11DriverBasicOpsTest, OperationWithBadResponse) {
     // Configure the mock to return an unexpected response
     uart_mock_->add_command_response("AT", "UNEXPECTED");
 

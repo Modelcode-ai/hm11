@@ -277,6 +277,11 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
     tests/driver_sensor_interval_test.cpp
     tests/driver_sensor_type_test.cpp
     tests/driver_sensor_temp_humidity_test.cpp
+    tests/watchdog_test.cpp
+    tests/drivers_test.cpp
+    tests/driver_advanced_test_additions.cpp
+    tests/numeric_formatter_test.cpp  # NEW
+    tests/ATCommandBuffer_test.cpp  # NEW
 
     src/examples/drivers.cpp
 
@@ -295,6 +300,11 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
     target_compile_options(hm11_tests
         PRIVATE
             $<$<CONFIG:Release>:-UNDEBUG>  # Undefine NDEBUG in Release for tests
+    )
+    # Define HM11_TESTING_ENABLED to allow test-only code like MockUARTPort
+    target_compile_definitions(hm11_tests
+        PRIVATE
+            HM11_TESTING_ENABLED
     )
     add_test(NAME unit_tests COMMAND hm11_tests)
 else()

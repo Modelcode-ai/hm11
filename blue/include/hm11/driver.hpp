@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstring>
 #include <span>
-#include <string>
 #include <string_view>
 
 #include "hm11/stm32/uart_port.hpp"
@@ -19,6 +18,12 @@ namespace hm11 {
  */
 class HM11Driver {
   public:
+    // C-style callback typedefs (no heap allocation)
+    using ServiceUuidCallback = void (*)(std::string_view service_info, void* user_data);
+    using CharacteristicUuidCallback = void (*)(std::string_view characteristic_info, void* user_data);
+    using DiscoveredCallback = void (*)(const std::array<char, 12>& mac, std::string_view name, std::string_view rssi, void* user_data);
+    using DiscoveredIBeaconCallback = void (*)(std::string_view device_data, void* user_data);
+
     /**
      * @brief Construct driver with optional UARTPort implementation.
      *
@@ -43,9 +48,11 @@ class HM11Driver {
 
     /**
      * @brief Get firmware version.
-     * @return Firmware version string.
+     * @param version Output firmware version string view (points into internal buffer).
+     * @param status Output status of the operation.
+     * @return true if status is Ok.
      */
-    std::string software_version();
+    bool software_version(std::string_view& version, Status& status);
 
     /**
      * @brief Set the role of the HM11 module (0 = peripheral, 1 = central).
@@ -260,12 +267,13 @@ class HM11Driver {
      * Sends AT+FINDALLSERVICES? command and parses the streaming response.
      * Service info format: start_handle:end_handle:uuid (e.g., "0001:000B:1800")
      *
-     * @param callback Function to call for each discovered service.
+     * @param callback C-style function pointer to call for each discovered service.
      * @param status Output status of the operation.
      * @param timeout_ms Timeout in milliseconds for the discovery operation.
      * @return true if status is Ok.
      */
-    bool find_all_services_uuid(const std::function<void(const std::string& service_info)>& callback,
+    bool find_all_services_uuid(ServiceUuidCallback callback,
+                                void* user_data,
                                 Status& status,
                                 std::uint32_t timeout_ms = 5000);
 
@@ -275,12 +283,13 @@ class HM11Driver {
      * Sends AT+FINDALLCHARS? command and parses the streaming response.
      * Characteristic info format: handle:properties:uuid (e.g., "0002:RD|WR|--|--|--:2A00")
      *
-     * @param callback Function to call for each discovered characteristic.
+     * @param callback C-style function pointer to call for each discovered characteristic.
      * @param status Output status of the operation.
      * @param timeout_ms Timeout in milliseconds for the discovery operation.
      * @return true if status is Ok.
      */
-    bool find_all_characteristic_uuid(const std::function<void(const std::string& characteristic_info)>& callback,
+    bool find_all_characteristic_uuid(CharacteristicUuidCallback callback,
+                                      void* user_data,
                                       Status& status,
                                       std::uint32_t timeout_ms = 5000);
 
@@ -292,14 +301,15 @@ class HM11Driver {
      *
      * @param from Start handle (4 hex characters).
      * @param to End handle (4 hex characters).
-     * @param callback Function to call for each discovered characteristic.
+     * @param callback C-style function pointer to call for each discovered characteristic.
      * @param status Output status of the operation.
      * @param timeout_ms Timeout in milliseconds for the discovery operation.
      * @return true if status is Ok.
      */
     bool find_characteristic_uuid(const util::HandleType& from,
                                   const util::HandleType& to,
-                                  const std::function<void(const std::string& characteristic_info)>& callback,
+                                  CharacteristicUuidCallback callback,
+                                  void* user_data,
                                   Status& status,
                                   std::uint32_t timeout_ms = 5000);
 
@@ -339,7 +349,7 @@ class HM11Driver {
     bool set_notify_mode(NotifyMode mode, Status& status);
     bool get_notify_mode(NotifyMode& mode, Status& status);
     bool set_module_name(std::string_view name, Status& status);
-    bool get_module_name(std::string& name, Status& status);
+    bool get_module_name(std::string_view& name, Status& status);
     bool set_notify_information(bool notify, Status& status);
     bool get_notify_information(bool& notify, Status& status);
     bool set_module_rx_gain(RXGain gain, Status& status);
@@ -447,13 +457,13 @@ class HM11Driver {
     bool send(std::string_view data, Status& status);
 
     /**
-     * @brief Receive data from UART into a string.
-     * @param out Output string to store received data.
+     * @brief Receive data from UART into a fixed internal buffer.
+     * @param out Output string_view pointing to received data in internal buffer.
      * @param status Output status of the operation.
      * @param max_len Maximum number of bytes to receive (default 256).
      * @return true if status is Ok.
      */
-    bool receive(std::string& out, Status& status, std::size_t max_len = 256);
+    bool receive(std::string_view& out, Status& status, std::size_t max_len = 256);
 
     /**
      * @brief Scan for nearby Bluetooth devices.
@@ -462,12 +472,13 @@ class HM11Driver {
      * device information (MAC, name, RSSI). The callback is invoked for each
      * discovered device.
      *
-     * @param callback Function to call for each discovered device.
+     * @param callback C-style function pointer to call for each discovered device.
      * @param status Output status of the operation.
      * @param timeout_ms Timeout in milliseconds for the scan operation.
      * @return true if status is Ok.
      */
-    bool scan(std::function<void(const std::array<char, 12>& mac, const std::string& name, const std::string& rssi)> callback,
+    bool scan(DiscoveredCallback callback,
+              void* user_data,
               Status& status,
               std::uint32_t timeout_ms = 5000);
 
@@ -478,21 +489,26 @@ class HM11Driver {
      * iBeacon device information. The callback receives a string in format:
      * FactoryID(8):UUID(32):MajorMinorPower(10):MAC(12):RSSI(4)
      *
-     * @param callback Function to call for each discovered iBeacon device.
+     * @param callback C-style function pointer to call for each discovered iBeacon device.
      * @param status Output status of the operation.
      * @param timeout_ms Timeout in milliseconds for the scan operation.
      * @return true if status is Ok.
      */
-    bool scan_ibeacon(const std::function<void(const std::string& device_data)>& callback,
+    bool scan_ibeacon(DiscoveredIBeaconCallback callback,
+                      void* user_data,
                       Status& status,
                       std::uint32_t timeout_ms = 5000);
 
     // Transmit overloads
     template <std::size_t N> void transmit(const std::array<char, N>& cmd) {
-        last_command.assign(cmd.data(), N);
-        auto pos = last_command.find('\0');
-        if (pos != std::string::npos) {
-            last_command.resize(pos);
+        // Copy command to buffer, stopping at null terminator or buffer capacity
+        last_command_size_ = 0;
+        for (std::size_t i = 0; i < N && i < last_command_buffer_.size(); ++i) {
+            if (cmd[i] == '\0') {
+                break;
+            }
+            last_command_buffer_[i] = cmd[i];
+            ++last_command_size_;
         }
     }
     void transmit(const std::string_view CMD, Status& status) { uart.transmit(CMD, status); }
@@ -536,7 +552,7 @@ class HM11Driver {
         transmit_and_check(CMD, EXPECTED, response_buffer, status);
     }
 
-    std::string get_last_command() const { return last_command; }
+    std::string_view get_last_command() const { return {last_command_buffer_.data(), last_command_size_}; }
 
     // Disallow copy/move
     HM11Driver(const HM11Driver&) = delete;
@@ -546,9 +562,11 @@ class HM11Driver {
 
   private:
     UARTPort& uart;           // injected UART abstraction
-    std::string last_command; // stored command for testing
+    std::array<char, 128> last_command_buffer_{};  // stored command for testing
+    std::size_t last_command_size_{0};             // length of last command
     bool get_ibeacon_uuid_chunk(std::size_t pos, std::array<char, 32>& uuid_out);
     std::array<uint8_t, 128> response_buffer{};
+    std::array<uint8_t, 1024> receive_buffer_{};   // buffer for public receive() method
 };
 
 } // namespace hm11

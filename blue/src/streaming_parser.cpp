@@ -16,20 +16,24 @@ static constexpr std::size_t MAC_LENGTH = 12;
 
 StreamingParser::StreamingParser(DiscoveredCallback callback, void* user_data)
     : m_callback(callback), m_user_data(user_data) {
-    m_buffer.reserve(512);  // Reserve some space to avoid reallocations
+    // Fixed-size buffer, no allocation needed
 }
 
 bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
-    // Append new data to m_buffer
-    for (std::size_t i = 0; i < size; ++i) {
-        m_buffer.push_back(static_cast<char>(data[i]));
+    // Append new data to m_buffer (with overflow protection)
+    std::size_t bytes_to_copy = std::min(size, BUFFER_SIZE - m_buffer_size);
+    if (bytes_to_copy < size) {
+        // Buffer overflow - saturate
+        // In production, this could log a warning
     }
+    std::memcpy(m_buffer.data() + m_buffer_size, data, bytes_to_copy);
+    m_buffer_size += bytes_to_copy;
 
-    while (!m_buffer.empty() && m_state != State::Complete) {
+    while (m_buffer_size > 0 && m_state != State::Complete) {
         switch (m_state) {
             case State::Selection: {
                 // Need at least 8 chars for shortest prefix
-                if (m_buffer.size() < 8) {
+                if (m_buffer_size < 8) {
                     return false;
                 }
 
@@ -77,12 +81,12 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
 
             case State::MAC: {
                 // Need 12 characters for MAC address
-                if (m_buffer.size() < MAC_LENGTH) {
+                if (m_buffer_size < MAC_LENGTH) {
                     return false;
                 }
 
                 // Read MAC address
-                std::copy_n(m_buffer.begin(), MAC_LENGTH, m_current_device.mac.begin());
+                std::memcpy(m_current_device.mac.data(), m_buffer.data(), MAC_LENGTH);
                 consume(MAC_LENGTH);
                 m_state = State::Selection;
                 break;
@@ -92,14 +96,30 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
                 // Look for \r\n terminator
                 std::size_t pos = find(CRLF);
                 if (pos == std::string::npos) {
-                    // No terminator yet, accumulate all data
-                    m_current_device.name += m_buffer;
-                    m_buffer.clear();
+                    // No terminator yet, accumulate all data with saturation
+                    std::size_t space_left = MAX_NAME_SIZE - m_current_device.name_len;
+                    std::size_t name_bytes = std::min(m_buffer_size, space_left);
+                    if (name_bytes < m_buffer_size) {
+                        // Name overflow - saturate
+                        // In production, this could log a warning
+                    }
+                    std::memcpy(m_current_device.name.data() + m_current_device.name_len,
+                               m_buffer.data(), name_bytes);
+                    m_current_device.name_len += name_bytes;
+                    consume(m_buffer_size);  // Consume all data
                     return false;
                 }
 
-                // Found terminator, extract name
-                m_current_device.name += m_buffer.substr(0, pos);
+                // Found terminator, extract name with saturation
+                std::size_t space_left = MAX_NAME_SIZE - m_current_device.name_len;
+                std::size_t name_bytes = std::min(pos, space_left);
+                if (name_bytes < pos) {
+                    // Name overflow - saturate
+                    // In production, this could log a warning
+                }
+                std::memcpy(m_current_device.name.data() + m_current_device.name_len,
+                           m_buffer.data(), name_bytes);
+                m_current_device.name_len += name_bytes;
                 consume(pos + CRLF.size());
                 m_state = State::Selection;
                 break;
@@ -109,14 +129,30 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
                 // Look for \r\n terminator
                 std::size_t pos = find(CRLF);
                 if (pos == std::string::npos) {
-                    // No terminator yet, accumulate all data
-                    m_current_device.rssi += m_buffer;
-                    m_buffer.clear();
+                    // No terminator yet, accumulate all data with saturation
+                    std::size_t space_left = MAX_RSSI_SIZE - m_current_device.rssi_len;
+                    std::size_t rssi_bytes = std::min(m_buffer_size, space_left);
+                    if (rssi_bytes < m_buffer_size) {
+                        // RSSI overflow - saturate
+                        // In production, this could log a warning
+                    }
+                    std::memcpy(m_current_device.rssi.data() + m_current_device.rssi_len,
+                               m_buffer.data(), rssi_bytes);
+                    m_current_device.rssi_len += rssi_bytes;
+                    consume(m_buffer_size);  // Consume all data
                     return false;
                 }
 
-                // Found terminator, extract RSSI
-                m_current_device.rssi += m_buffer.substr(0, pos);
+                // Found terminator, extract RSSI with saturation
+                std::size_t space_left = MAX_RSSI_SIZE - m_current_device.rssi_len;
+                std::size_t rssi_bytes = std::min(pos, space_left);
+                if (rssi_bytes < pos) {
+                    // RSSI overflow - saturate
+                    // In production, this could log a warning
+                }
+                std::memcpy(m_current_device.rssi.data() + m_current_device.rssi_len,
+                           m_buffer.data(), rssi_bytes);
+                m_current_device.rssi_len += rssi_bytes;
                 consume(pos + CRLF.size());
                 m_state = State::Selection;
                 break;
@@ -134,7 +170,7 @@ bool StreamingParser::parse(const std::uint8_t* data, std::size_t size) {
 void StreamingParser::reset() {
     m_state = State::Selection;
     m_current_device.clear();
-    m_buffer.clear();
+    m_buffer_size = 0;
 }
 
 void StreamingParser::flush() {
@@ -142,22 +178,24 @@ void StreamingParser::flush() {
 }
 
 bool StreamingParser::starts_with(std::string_view prefix) const {
-    if (m_buffer.size() < prefix.size()) {
+    if (m_buffer_size < prefix.size()) {
         return false;
     }
-    return m_buffer.starts_with(prefix);
+    return buffer_view().starts_with(prefix);
 }
 
 void StreamingParser::consume(std::size_t count) {
-    if (count >= m_buffer.size()) {
-        m_buffer.clear();
+    if (count >= m_buffer_size) {
+        m_buffer_size = 0;
     } else {
-        m_buffer.erase(0, count);
+        // Use memmove for compaction (handles overlapping regions)
+        std::memmove(m_buffer.data(), m_buffer.data() + count, m_buffer_size - count);
+        m_buffer_size -= count;
     }
 }
 
 std::size_t StreamingParser::find(std::string_view needle) const {
-    return m_buffer.find(needle);
+    return buffer_view().find(needle);
 }
 
 void StreamingParser::invoke_callback() {

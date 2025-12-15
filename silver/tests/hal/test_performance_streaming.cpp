@@ -54,7 +54,7 @@ class PerformanceStreamingTest : public ::testing::Test {
         }
 
         response += "OK+DISCE";
-        return std::vector<uint8_t>(response.begin(), response.end());
+        return {response.begin(), response.end()};
     }
 
     // Generate large iBeacon discovery response
@@ -78,7 +78,7 @@ class PerformanceStreamingTest : public ::testing::Test {
         }
 
         response += "OK+SCANE";
-        return std::vector<uint8_t>(response.begin(), response.end());
+        return {response.begin(), response.end()};
     }
 
     // Generate characteristic discovery response with many characteristics
@@ -106,7 +106,7 @@ class PerformanceStreamingTest : public ::testing::Test {
         }
 
         response += header;
-        return std::vector<uint8_t>(response.begin(), response.end());
+        return {response.begin(), response.end()};
     }
 
   private:

@@ -1,7 +1,7 @@
 # HM11 GATT Client Example - Discovery to Connection Workflow
 
 # Create the example executable
-add_executable(04_gatt_client main.cpp ../../src/discovery.cpp)
+add_executable(04_gatt_client main.cpp)
 
 # Link required libraries
 target_link_libraries(04_gatt_client

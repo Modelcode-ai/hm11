@@ -19,6 +19,30 @@ struct ScannedDevice {
         : mac(m), name(std::move(n)), rssi(std::move(r)) {}
 };
 
+// C-style callback for collecting devices
+static void scan_callback(const std::array<char, 12>& mac, std::string_view name, std::string_view rssi, void* user_data) {
+    auto* devices = static_cast<std::vector<ScannedDevice>*>(user_data);
+    devices->emplace_back(mac, std::string(name), std::string(rssi));
+}
+
+// C-style callback for tracking invocation order
+static void order_callback([[maybe_unused]] const std::array<char, 12>& mac,
+                          [[maybe_unused]] std::string_view name,
+                          [[maybe_unused]] std::string_view rssi,
+                          void* user_data) {
+    auto* order = static_cast<std::vector<int>*>(user_data);
+    order->push_back(static_cast<int>(order->size() + 1));
+}
+
+// C-style callback for tracking device names
+static void name_callback([[maybe_unused]] const std::array<char, 12>& mac,
+                         std::string_view name,
+                         [[maybe_unused]] std::string_view rssi,
+                         void* user_data) {
+    auto* names = static_cast<std::vector<std::string>*>(user_data);
+    names->push_back(std::string(name));
+}
+
 // ========== Scan Tests ==========
 
 TEST(HM11DriverScanTest, ScanSingleDevice) {
@@ -38,12 +62,9 @@ TEST(HM11DriverScanTest, ScanSingleDevice) {
 
     // Collect discovered devices
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
     // Execute scan
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify transmitted command
@@ -78,11 +99,8 @@ TEST(HM11DriverScanTest, ScanMultipleDevices) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify three devices discovered
@@ -118,11 +136,8 @@ TEST(HM11DriverScanTest, ScanFragmentedResponse) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify device was correctly assembled from fragments
@@ -143,11 +158,8 @@ TEST(HM11DriverScanTest, ScanEmptyResults) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify no devices discovered
@@ -171,11 +183,8 @@ TEST(HM11DriverScanTest, ScanDeviceWithLongName) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     ASSERT_EQ(devices.size(), 1);
@@ -200,11 +209,8 @@ TEST(HM11DriverScanTest, ScanDeviceWithEmptyName) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     ASSERT_EQ(devices.size(), 1);
@@ -221,11 +227,8 @@ TEST(HM11DriverScanTest, ScanTransmitError) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_FALSE(driver.scan(callback, status, 5000));
+    EXPECT_FALSE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_NE(status, Status::Ok);
     EXPECT_EQ(devices.size(), 0);
 }
@@ -250,13 +253,8 @@ TEST(HM11DriverScanTest, ScanCallbackInvocation) {
 
     // Track callback invocation order
     std::vector<std::string> invocation_order;
-    auto callback = [&invocation_order]([[maybe_unused]] const std::array<char, 12>& mac,
-                                        const std::string& name,
-                                        [[maybe_unused]] const std::string& rssi) {
-        invocation_order.push_back(name);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(name_callback, &invocation_order, status, 5000));
 
     // Verify callbacks were invoked in order
     ASSERT_EQ(invocation_order.size(), 2);
@@ -286,11 +284,8 @@ TEST(HM11DriverScanTest, ScanRSSIVariations) {
     Status status = Status::Ok;
 
     std::vector<ScannedDevice> devices;
-    auto callback = [&devices](const std::array<char, 12>& mac, const std::string& name, const std::string& rssi) {
-        devices.emplace_back(mac, name, rssi);
-    };
 
-    EXPECT_TRUE(driver.scan(callback, status, 5000));
+    EXPECT_TRUE(driver.scan(scan_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     ASSERT_EQ(devices.size(), 3);

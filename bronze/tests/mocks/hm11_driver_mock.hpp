@@ -173,7 +173,7 @@ class EnhancedUARTMock : public UARTMock {
 
         // Default AT command responses
         add_command_response("AT", "OK");
-        add_command_response("AT+VERSION", "HMSoft V1.0");
+        add_command_response("AT+VERSION", "HMSoft V545");
         add_command_response("AT+RESET", "OK");
         add_command_response("AT+RESTART", "OK");
         add_command_response("AT+ROLE?", "OK+Get:0");  // Default is Peripheral
@@ -182,59 +182,8 @@ class EnhancedUARTMock : public UARTMock {
         add_command_response("AT+SLEEP", "OK+SLEEP");
         add_command_response("AT+MODE?", "OK+Get:0");  // Default is Transmission mode
 
-        // Set up role command handler
-        add_command_handler("AT+ROLE", [this](const std::string& command, 
-                                              std::string& response,
-                                              hal::UartStatus& status) {
-            // Extract role value from command (e.g., "AT+ROLE0" -> "0")
-            if (command.length() > 7) {
-                std::string role_str = command.substr(7);
-                current_role = (role_str == "0") ? Role::Peripheral : Role::Central;
-                response = "OK+Set:";
-                response += role_str;
-            } else {
-                response = "OK+Get:";
-                response += (current_role == Role::Peripheral) ? "0" : "1";
-            }
-            status = hal::UartStatus::Ok;
-        });
-
-        // Set up name command handler
-        add_command_handler("AT+NAME", [this](const std::string& command,
-                                              std::string& response,
-                                              hal::UartStatus& status) {
-            if (command.length() > 7) {
-                current_name = command.substr(7);
-                response = "OK+Set:";
-                response += current_name;
-            } else {
-                response = "OK+NAME:";
-                response += current_name;
-            }
-            status = hal::UartStatus::Ok;
-        });
-
-        // Set up work mode command handler
-        add_command_handler("AT+MODE", [this](const std::string& command,
-                                              std::string& response,
-                                              hal::UartStatus& status) {
-            if (command.length() > 7) {
-                std::string mode_str = command.substr(7);
-                if (mode_str == "0") {
-                    current_mode = WorkMode::TransmissionMode;
-                } else if (mode_str == "1") {
-                    current_mode = WorkMode::PioCollectionMode;
-                } else if (mode_str == "2") {
-                    current_mode = WorkMode::RemoteControlMode;
-                }
-                response = "OK+Set:";
-                response += mode_str;
-            } else {
-                response = "OK+Get:";
-                response += std::to_string(static_cast<int>(current_mode));
-            }
-            status = hal::UartStatus::Ok;
-        });
+        // Note: ROLE, NAME, and MODE command handlers removed to allow tests to override responses
+        // Tests can use add_command_response() to set up expected responses
 
         // Add other command handlers as needed
 
@@ -246,17 +195,24 @@ class EnhancedUARTMock : public UARTMock {
         using Data8b = const hal::UartData8b&;
 
         ON_CALL(*this, transmit(::testing::An<Data8b>(), _, _))
-            .WillByDefault(Invoke([this](const hal::UartData8b& data, 
+            .WillByDefault(Invoke([this](const hal::UartData8b& data,
                                          hal::UartStatus& status,
                                          std::chrono::milliseconds) {
-                // Cannot access m_transmitted_data_8b directly as it's now private
-                // Store the data via transmitted_data_8b accessor
-                const_cast<std::vector<hal::UInt8>&>(transmitted_data_8b()).insert(
-                    transmitted_data_8b().end(), data.begin(), data.end());
-                
+                // Clear any previous responses from the receive queue
+                clear_receive_queue();
+
+                // Store the transmitted data (now accessible as protected member)
+                m_transmitted_data_8b.insert(m_transmitted_data_8b.end(), data.begin(), data.end());
+
+                // Check if a non-Ok default status has been set (for error injection)
+                if (m_default_status != hal::UartStatus::Ok) {
+                    status = m_default_status;
+                    return;
+                }
+
                 // Convert to string for easier handling
                 std::string command(data.begin(), data.end());
-                
+
                 // Find matching command handler
                 for (const auto& [cmd_prefix, handler] : command_handlers_) {
                     if (command.find(cmd_prefix) == 0) {
@@ -266,7 +222,7 @@ class EnhancedUARTMock : public UARTMock {
                         return;
                     }
                 }
-                
+
                 // Find matching command response
                 for (const auto& [cmd_prefix, resp] : command_responses) {
                     if (command.find(cmd_prefix) == 0) {
@@ -275,7 +231,7 @@ class EnhancedUARTMock : public UARTMock {
                         return;
                     }
                 }
-                
+
                 // Default response
                 queue_receive_data("OK");
                 status = hal::UartStatus::Ok;

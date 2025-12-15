@@ -9,7 +9,7 @@ using namespace hm11;
 TEST(HM11DriverSensorTempHumidityTest, GetTemperatureAndHumidity) {
     MockUARTPort uart;
     // Simulate response: OK+GET:025060\r\n (temperature 25, humidity 60)
-    uart.set_next_receive(OK_GET + "025060\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "025060\r\n");
     HM11Driver driver(uart);
     util::Temperature temperature;
     util::Percent humidity;

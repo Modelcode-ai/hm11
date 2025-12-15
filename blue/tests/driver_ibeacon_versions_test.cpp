@@ -9,7 +9,7 @@ using namespace hm11;
 TEST(HM11DriverIBeaconVersionTest, SetMajorVersion) {
     MockUARTPort uart;
     // Mock response for successful SET command
-    uart.set_next_receive(OK_SET + "\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "\r\n");
     HM11Driver driver(uart);
     std::array<char, 4> major = {'F', 'F', 'E', '0'}; // example hex string
     EXPECT_TRUE(driver.set_ibeacon_major(major));
@@ -19,7 +19,7 @@ TEST(HM11DriverIBeaconVersionTest, SetMajorVersion) {
 
 TEST(HM11DriverIBeaconVersionTest, SetMinorVersion) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "\r\n");
     HM11Driver driver(uart);
     std::array<char, 4> minor = {'0', '0', '0', '1'}; // example
     EXPECT_TRUE(driver.set_ibeacon_minor(minor));
@@ -28,7 +28,7 @@ TEST(HM11DriverIBeaconVersionTest, SetMinorVersion) {
 
 TEST(HM11DriverIBeaconVersionTest, SetMeasuredPower) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "\r\n");
     HM11Driver driver(uart);
     std::array<char, 2> power = {'C', '5'}; // example hex
     EXPECT_TRUE(driver.set_ibeacon_measured_power(power));

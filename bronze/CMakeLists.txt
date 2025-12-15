@@ -470,14 +470,15 @@ endif()
 # ============================================================================
 
 # Standalone test for array utilities
-add_executable(run_array_utils_test
-    run_array_utils_test.cpp
-)
-
-target_include_directories(run_array_utils_test
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+# Commented out until run_array_utils_test.cpp is created
+# add_executable(run_array_utils_test
+#     run_array_utils_test.cpp
+# )
+#
+# target_include_directories(run_array_utils_test
+#     PRIVATE
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+# )
 
 # Run all tests (unit + stress if enabled)
 add_custom_target(run-all-tests

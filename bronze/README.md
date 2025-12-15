@@ -165,6 +165,16 @@ The driver is structured into several modules:
 - **Synchronization**: ISR-safe primitives for thread synchronization
 - **Platform**: Platform-specific implementations
 
+For more details, see the [Architecture Documentation](docs/architecture.md).
+
+## Documentation
+
+- [API Reference](docs/api_reference.md): Complete documentation of all classes and functions
+- [Build System](docs/build_system.md): Detailed build options and configuration
+- [Memory Alignment](docs/memory_alignment.md): DMA alignment utilities and best practices
+- [Binary Semaphore](platform-binary-semaphore.md): ISR-safe synchronization implementation
+- [Migration Guide](docs/migration_guide.md): Guide for migrating from the Ada implementation
+
 ## License
 
 Copyright (C) 2025, AdaCore

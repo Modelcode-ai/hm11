@@ -11,7 +11,7 @@ using namespace hm11;
 
 TEST(HM11DriverConfigTest, SetWhiteListSwitch_Enable) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_white_list_switch(true, status));
@@ -21,7 +21,7 @@ TEST(HM11DriverConfigTest, SetWhiteListSwitch_Enable) {
 
 TEST(HM11DriverConfigTest, GetWhiteListSwitch) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     bool enabled = false;
     Status status = Status::Ok;
@@ -31,7 +31,7 @@ TEST(HM11DriverConfigTest, GetWhiteListSwitch) {
 
 TEST(HM11DriverConfigTest, SetWhiteListMACAddress) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "AABBCCDDEEFF\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "AABBCCDDEEFF\r\n");
     HM11Driver driver(uart);
     util::MACAddress mac("AABBCCDDEEFF");
     util::MacWhiteListIndex index(1);
@@ -55,7 +55,7 @@ TEST(HM11DriverConfigTest, GetWhiteListMACAddress) {
 
 TEST(HM11DriverConfigTest, SetBatteryMonitorSwitch) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_battery_monitor_switch(true, status));
@@ -64,7 +64,7 @@ TEST(HM11DriverConfigTest, SetBatteryMonitorSwitch) {
 
 TEST(HM11DriverConfigTest, GetBatteryMonitorSwitch) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     bool enabled = true;
     Status status = Status::Ok;
@@ -84,7 +84,7 @@ TEST(HM11DriverConfigTest, SetBatteryInformation) {
 
 TEST(HM11DriverConfigTest, QueryBatteryInformation) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "085\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "085\r\n");
     HM11Driver driver(uart);
     util::Percent value(0);
     Status status = Status::Ok;
@@ -96,7 +96,7 @@ TEST(HM11DriverConfigTest, QueryBatteryInformation) {
 
 TEST(HM11DriverConfigTest, SetUARTBaudRate) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "4\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "4\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_uart_baud_rate(BaudRate::BR115200, status));
@@ -105,7 +105,7 @@ TEST(HM11DriverConfigTest, SetUARTBaudRate) {
 
 TEST(HM11DriverConfigTest, GetUARTBaudRate) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     BaudRate rate = BaudRate::BR115200;
     Status status = Status::Ok;
@@ -115,7 +115,7 @@ TEST(HM11DriverConfigTest, GetUARTBaudRate) {
 
 TEST(HM11DriverConfigTest, SetUARTFlowControl) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_uart_flow_control_switch(true, status));
@@ -124,7 +124,7 @@ TEST(HM11DriverConfigTest, SetUARTFlowControl) {
 
 TEST(HM11DriverConfigTest, GetUARTFlowControl) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     bool enabled = true;
     Status status = Status::Ok;
@@ -134,7 +134,7 @@ TEST(HM11DriverConfigTest, GetUARTFlowControl) {
 
 TEST(HM11DriverConfigTest, SetParityBit_None) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_parity_bit(ParityBit::None, status));
@@ -143,7 +143,7 @@ TEST(HM11DriverConfigTest, SetParityBit_None) {
 
 TEST(HM11DriverConfigTest, SetParityBit_Even) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "2\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "2\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_parity_bit(ParityBit::Even, status));
@@ -152,7 +152,7 @@ TEST(HM11DriverConfigTest, SetParityBit_Even) {
 
 TEST(HM11DriverConfigTest, GetParityBit) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     ParityBit parity = ParityBit::None;
     Status status = Status::Ok;
@@ -162,7 +162,7 @@ TEST(HM11DriverConfigTest, GetParityBit) {
 
 TEST(HM11DriverConfigTest, SetStopBit) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_stop_bit(StopBit::TwoStopBit, status));
@@ -171,7 +171,7 @@ TEST(HM11DriverConfigTest, SetStopBit) {
 
 TEST(HM11DriverConfigTest, GetStopBit) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     StopBit stop = StopBit::TwoStopBit;
     Status status = Status::Ok;
@@ -181,7 +181,7 @@ TEST(HM11DriverConfigTest, GetStopBit) {
 
 TEST(HM11DriverConfigTest, SetUARTSleepType) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_uart_sleep_type(UARTSleepType::ShutdownUART, status));
@@ -190,7 +190,7 @@ TEST(HM11DriverConfigTest, SetUARTSleepType) {
 
 TEST(HM11DriverConfigTest, GetUARTSleepType) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     UARTSleepType type = UARTSleepType::ShutdownUART;
     Status status = Status::Ok;
@@ -202,7 +202,7 @@ TEST(HM11DriverConfigTest, GetUARTSleepType) {
 
 TEST(HM11DriverConfigTest, SetMinimumLinkLayerConnectionInterval) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_minimum_link_layer_connection_interval(LinkLayerConnectionInterval::Ms20, status));
@@ -211,7 +211,7 @@ TEST(HM11DriverConfigTest, SetMinimumLinkLayerConnectionInterval) {
 
 TEST(HM11DriverConfigTest, GetMinimumLinkLayerConnectionInterval) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "2\r\n");
     HM11Driver driver(uart);
     LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::Ms7;
     Status status = Status::Ok;
@@ -221,7 +221,7 @@ TEST(HM11DriverConfigTest, GetMinimumLinkLayerConnectionInterval) {
 
 TEST(HM11DriverConfigTest, SetMaximumLinkLayerConnectionInterval) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "5\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "5\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_maximum_link_layer_connection_interval(LinkLayerConnectionInterval::Ms30, status));
@@ -230,7 +230,7 @@ TEST(HM11DriverConfigTest, SetMaximumLinkLayerConnectionInterval) {
 
 TEST(HM11DriverConfigTest, GetMaximumLinkLayerConnectionInterval) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "4\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "4\r\n");
     HM11Driver driver(uart);
     LinkLayerConnectionInterval interval = LinkLayerConnectionInterval::Ms7;
     Status status = Status::Ok;
@@ -240,7 +240,7 @@ TEST(HM11DriverConfigTest, GetMaximumLinkLayerConnectionInterval) {
 
 TEST(HM11DriverConfigTest, SetSlaveLatency) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     util::LayerConnectionLatency latency(3);
     Status status = Status::Ok;
@@ -250,7 +250,7 @@ TEST(HM11DriverConfigTest, SetSlaveLatency) {
 
 TEST(HM11DriverConfigTest, GetSlaveLatency) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "2\r\n");
     HM11Driver driver(uart);
     util::LayerConnectionLatency latency(0);
     Status status = Status::Ok;
@@ -260,7 +260,7 @@ TEST(HM11DriverConfigTest, GetSlaveLatency) {
 
 TEST(HM11DriverConfigTest, SetConnectionSupervisionTimeout) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "5\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "5\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_connection_supervision_timeout(ConnectionSupervisionTimeout::Ms5000, status));
@@ -269,7 +269,7 @@ TEST(HM11DriverConfigTest, SetConnectionSupervisionTimeout) {
 
 TEST(HM11DriverConfigTest, GetConnectionSupervisionTimeout) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "3\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "3\r\n");
     HM11Driver driver(uart);
     ConnectionSupervisionTimeout timeout = ConnectionSupervisionTimeout::Ms100;
     Status status = Status::Ok;
@@ -279,7 +279,7 @@ TEST(HM11DriverConfigTest, GetConnectionSupervisionTimeout) {
 
 TEST(HM11DriverConfigTest, SetUpdateConnection_Enable) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_update_connection(true, status));
@@ -288,7 +288,7 @@ TEST(HM11DriverConfigTest, SetUpdateConnection_Enable) {
 
 TEST(HM11DriverConfigTest, GetUpdateConnection) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     bool enabled = true;
     Status status = Status::Ok;

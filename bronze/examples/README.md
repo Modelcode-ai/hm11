@@ -225,3 +225,10 @@ Planned future examples include:
 3. **iBeacon Configuration Example**: Demonstrates how to configure an HM11 module as an iBeacon
 4. **HMSensor Integration Example**: Shows how to work with HM11 modules that include sensor functionality
 5. **Low Power Example**: Demonstrates power management features of the HM11 module
+
+## Further Resources
+
+- [API Reference](../docs/api_reference.md): Complete documentation of all classes and functions
+- [Build System](../docs/build_system.md): Detailed build options and configuration
+- [Memory Alignment](../docs/memory_alignment.md): DMA alignment utilities and best practices
+- [Binary Semaphore](../platform-binary-semaphore.md): ISR-safe synchronization implementation

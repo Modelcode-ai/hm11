@@ -582,4 +582,107 @@ std::optional<UartSleepType> parse_uart_sleep_type(std::string_view str) {
     }
 }
 
+// ============================================================================
+// Character Conversion Functions
+// ============================================================================
+
+char to_char(AdvertisingInterval interval) {
+    switch (interval) {
+        case AdvertisingInterval::Ms100:  return '0';
+        case AdvertisingInterval::Ms211:  return '1';
+        case AdvertisingInterval::Ms252:  return '2';
+        case AdvertisingInterval::Ms318:  return '3';
+        case AdvertisingInterval::Ms417:  return '4';
+        case AdvertisingInterval::Ms546:  return '5';
+        case AdvertisingInterval::Ms760:  return '6';
+        case AdvertisingInterval::Ms852:  return '7';
+        case AdvertisingInterval::Ms1022: return '8';
+        case AdvertisingInterval::Ms1285: return '9';
+        case AdvertisingInterval::Ms2000: return 'A';
+        case AdvertisingInterval::Ms3000: return 'B';
+        case AdvertisingInterval::Ms4000: return 'C';
+        case AdvertisingInterval::Ms5000: return 'D';
+        case AdvertisingInterval::Ms6000: return 'E';
+        case AdvertisingInterval::Ms7000: return 'F';
+        default: return '0';
+    }
+}
+
+AdvertisingInterval from_char(char c, [[maybe_unused]] AdvertisingInterval* tag) {
+    switch (c) {
+        case '0': return AdvertisingInterval::Ms100;
+        case '1': return AdvertisingInterval::Ms211;
+        case '2': return AdvertisingInterval::Ms252;
+        case '3': return AdvertisingInterval::Ms318;
+        case '4': return AdvertisingInterval::Ms417;
+        case '5': return AdvertisingInterval::Ms546;
+        case '6': return AdvertisingInterval::Ms760;
+        case '7': return AdvertisingInterval::Ms852;
+        case '8': return AdvertisingInterval::Ms1022;
+        case '9': return AdvertisingInterval::Ms1285;
+        case 'A': case 'a': return AdvertisingInterval::Ms2000;
+        case 'B': case 'b': return AdvertisingInterval::Ms3000;
+        case 'C': case 'c': return AdvertisingInterval::Ms4000;
+        case 'D': case 'd': return AdvertisingInterval::Ms5000;
+        case 'E': case 'e': return AdvertisingInterval::Ms6000;
+        case 'F': case 'f': return AdvertisingInterval::Ms7000;
+        default: return AdvertisingInterval::Ms100;
+    }
+}
+
+char to_char(AdvertisingType type) {
+    return static_cast<char>('0' + static_cast<int>(type));
+}
+
+AdvertisingType from_char(char c, [[maybe_unused]] AdvertisingType* tag) {
+    if (c >= '0' && c <= '3') {
+        return static_cast<AdvertisingType>(c - '0');
+    }
+    return AdvertisingType::AdvertisingScanResponseConnectable;
+}
+
+char to_char(AdvertisingMode mode) {
+    return static_cast<char>('0' + static_cast<int>(mode));
+}
+
+AdvertisingMode from_char(char c, [[maybe_unused]] AdvertisingMode* tag) {
+    if (c >= '0' && c <= '1') {
+        return static_cast<AdvertisingMode>(c - '0');
+    }
+    return AdvertisingMode::NormalAdvertising;
+}
+
+char to_char(WorkMode mode) {
+    return static_cast<char>('0' + static_cast<int>(mode));
+}
+
+WorkMode from_char(char c, [[maybe_unused]] WorkMode* tag) {
+    if (c >= '0' && c <= '2') {
+        return static_cast<WorkMode>(c - '0');
+    }
+    return WorkMode::TransmissionMode;
+}
+
+char to_char(WorkType type) {
+    return static_cast<char>('0' + static_cast<int>(type));
+}
+
+WorkType from_char(char c, [[maybe_unused]] WorkType* tag) {
+    if (c >= '0' && c <= '1') {
+        return static_cast<WorkType>(c - '0');
+    }
+    return WorkType::StartImmediately;
+}
+
+char to_char(NotifyMode mode) {
+    return static_cast<char>('0' + static_cast<int>(mode));
+}
+
+NotifyMode from_char(char c, [[maybe_unused]] NotifyMode* tag) {
+    if (c >= '0' && c <= '1') {
+        return static_cast<NotifyMode>(c - '0');
+    }
+    return NotifyMode::WithoutAddress;
+}
+
 } // namespace hm11

@@ -328,18 +328,19 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
         tests/hal/test_gatt_service_discovery.cpp
         tests/hal/test_ibeacon_operations.cpp
         tests/hal/test_sensor_operations.cpp
-
-        src/hm11_driver.cpp  # Include template instantiation definitions
-        src/discovery.cpp    # Include discovery implementation
-        src/ibeacon.cpp      # Include iBeacon implementation
+        tests/hal/test_core_operations.cpp  # Core operations and fundamental driver functionality
+        tests/hal/test_configuration_api.cpp   # Configuration API tests
+        tests/hal/test_error_handling.cpp # Driver error handling tests
+        tests/hal/test_coverage_recovery.cpp # Coverage recovery tests for previously deleted tests
+        tests/hal/test_utility_types.cpp      # Utility types and parsing tests
+        tests/hal/test_enum_conversions.cpp # Comprehensive enum conversion tests
+        tests/hal/test_driver_gatt_and_battery.cpp # GATT and battery query tests
+        tests/hal/test_buffer_capacity.cpp # Buffer capacity and invalid character validation tests
     )
     
     # Performance and stress tests - separate executable for performance testing
     add_executable(hm11_performance_tests
         tests/hal/test_performance_streaming.cpp
-        src/hm11_driver.cpp
-        src/discovery.cpp
-        src/ibeacon.cpp
     )
     target_link_libraries(hm11_performance_tests
         PRIVATE
@@ -349,8 +350,9 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
     
     # Fuzzing tests - separate executable for security testing
     add_executable(hm11_fuzzing_tests
-
-        tests/util/test_parsing.cpp  # Include existing parsing tests
+        tests/util/test_parsing.cpp  # Parsing tests (comprehensive and parameterized)
+        tests/util/test_parsing_circular_buffer.cpp  # Circular buffer parsing tests
+        tests/util/test_string_builder.cpp  # String builder tests
     )
     target_link_libraries(hm11_fuzzing_tests
         PRIVATE

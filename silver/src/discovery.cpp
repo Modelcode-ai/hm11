@@ -70,7 +70,6 @@ void HM11Driver<UARTImpl>::scan(
         return;
     }
 
-    // TODO: For now use simple receive - in Task 4 this will be replaced with streaming
     // For prototype, receive into internal buffer and parse synchronously
     constexpr std::size_t DISCOVERY_BUFFER_SIZE = MAX_MESSAGE_LENGTH * 5;
     hal::UARTData8b response_data{response_buffer_.data(), DISCOVERY_BUFFER_SIZE};

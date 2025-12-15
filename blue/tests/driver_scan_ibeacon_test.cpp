@@ -21,6 +21,18 @@ std::string make_ibeacon_data(
     return factory_id + uuid + major_minor_power + mac + rssi;
 }
 
+// C-style callback for collecting iBeacon data
+static void ibeacon_callback(std::string_view device_data, void* user_data) {
+    auto* devices = static_cast<std::vector<std::string>*>(user_data);
+    devices->push_back(std::string(device_data));
+}
+
+// C-style callback for extracting factory IDs (first 8 chars)
+static void factory_id_callback(std::string_view device_data, void* user_data) {
+    auto* ids = static_cast<std::vector<std::string>*>(user_data);
+    ids->push_back(std::string(device_data.substr(0, 8)));
+}
+
 // ========== Scan iBeacon Tests ==========
 
 TEST(HM11DriverScaniBeaconTest, ScanSingleiBeacon) {
@@ -43,12 +55,9 @@ TEST(HM11DriverScaniBeaconTest, ScanSingleiBeacon) {
 
     // Collect discovered iBeacons
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
     // Execute scan
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_TRUE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify transmitted command
@@ -98,11 +107,8 @@ TEST(HM11DriverScaniBeaconTest, ScanMultipleiBeacons) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_TRUE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify three devices discovered
@@ -135,11 +141,8 @@ TEST(HM11DriverScaniBeaconTest, ScanFragmentedResponse) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_TRUE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify device was correctly assembled from fragments
@@ -158,11 +161,8 @@ TEST(HM11DriverScaniBeaconTest, ScanEmptyResults) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_TRUE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 5000));
     EXPECT_EQ(status, Status::Ok);
 
     // Verify no devices discovered
@@ -177,7 +177,7 @@ TEST(HM11DriverScaniBeaconTest, ReceiveBasic) {
     HM11Driver driver(uart);
     Status status = Status::Ok;
 
-    std::string received;
+    std::string_view received;
     bool result = driver.receive(received, status, 256);
 
     EXPECT_TRUE(result);
@@ -198,7 +198,7 @@ TEST(HM11DriverScaniBeaconTest, TransmitThenReceive) {
     EXPECT_EQ(status, Status::Ok);
 
     // Then receive
-    std::string received;
+    std::string_view received;
     bool result = driver.receive(received, status, 512);
 
     EXPECT_TRUE(result);
@@ -208,8 +208,8 @@ TEST(HM11DriverScaniBeaconTest, TransmitThenReceive) {
 
 TEST(HM11DriverScaniBeaconTest, CheckATCommand) {
     // Verify the AT command builder creates the correct command
-    std::string cmd = ATCommandBuilder::build(AtCommand::ScaniBeacon, {});
-    EXPECT_EQ(cmd, "AT+DISI?\r\n");
+    auto cmd = ATCommandBuilder::build(AtCommand::ScaniBeacon, {});
+    EXPECT_EQ(cmd.finalize(), "AT+DISI?\r\n");
 }
 
 TEST(HM11DriverScaniBeaconTest, ScanTransmitOnly) {
@@ -220,12 +220,9 @@ TEST(HM11DriverScaniBeaconTest, ScanTransmitOnly) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
     // This should timeout quickly since no data
-    EXPECT_FALSE(driver.scan_ibeacon(callback, status, 100));  // Short timeout
+    EXPECT_FALSE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 100));  // Short timeout
     EXPECT_EQ(status, Status::Timeout);
 
     // But transmit should have happened
@@ -240,11 +237,8 @@ TEST(HM11DriverScaniBeaconTest, ScanEmptyResponse) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 500));
+    EXPECT_TRUE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 500));
     EXPECT_EQ(status, Status::Ok);
     EXPECT_EQ(devices.size(), 0);
     EXPECT_EQ(uart.get_transmitted_data(), "AT+DISI?\r\n");
@@ -258,11 +252,8 @@ TEST(HM11DriverScaniBeaconTest, ScanTransmitError) {
     Status status = Status::Ok;
 
     std::vector<std::string> devices;
-    auto callback = [&devices](const std::string& device_data) {
-        devices.push_back(device_data);
-    };
 
-    EXPECT_FALSE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_FALSE(driver.scan_ibeacon(ibeacon_callback, &devices, status, 5000));
     EXPECT_NE(status, Status::Ok);
     EXPECT_EQ(devices.size(), 0);
 }
@@ -295,12 +286,8 @@ TEST(HM11DriverScaniBeaconTest, ScanCallbackInvocation) {
 
     // Track callback invocation order
     std::vector<std::string> invocation_order;
-    auto callback = [&invocation_order](const std::string& device_data) {
-        // Extract factory ID (first 8 chars) to identify device
-        invocation_order.push_back(device_data.substr(0, 8));
-    };
 
-    EXPECT_TRUE(driver.scan_ibeacon(callback, status, 5000));
+    EXPECT_TRUE(driver.scan_ibeacon(factory_id_callback, &invocation_order, status, 5000));
 
     // Verify callbacks were invoked in order
     ASSERT_EQ(invocation_order.size(), 2);

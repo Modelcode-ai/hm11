@@ -35,6 +35,11 @@ add_hm11_test(driver_connection_test
     ../mocks/hm11_driver_test_stubs.cpp
 )
 
+# Add DiscoveredInfo test executable
+add_hm11_test(discovered_info_test
+    discovered_info_test.cpp
+)
+
 # Instead of linking to libraries, add the source files directly
 target_sources(driver_test
     PRIVATE

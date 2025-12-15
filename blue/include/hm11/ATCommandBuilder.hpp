@@ -13,10 +13,11 @@
 
 #pragma once
 
+#include "hm11/ATCommandBuffer.hpp"
+
 #include <cstdint>
 #include <initializer_list>
-#include <string>
-#include <vector>
+#include <string_view>
 
 namespace hm11 {
 
@@ -412,50 +413,59 @@ constexpr const char* command_base(AtCommand cmd) noexcept {
     return ""; // unreachable
 }
 
-constexpr const std::string OK_GET = "OK+GET:";
-constexpr const std::string OK_SET = "OK+SET:";
+constexpr const char* OK_GET = "OK+GET:";
+constexpr const char* OK_SET = "OK+SET:";
 
 /**
- * @brief Runtime builder for AT command strings.
+ * @brief Runtime builder for AT command strings using fixed-size buffers.
  *
- * This class provides a simple runtime API – no templates or compile‑time
- * validation. It builds a command from an AtCommand value and a list of
- * unsigned‑integer parameters, appending a trailing CR/LF.
+ * This class provides a simple runtime API for building AT commands without
+ * heap allocation. Uses fixed-size ATCommandBuffer internally for embedded
+ * systems and real-time requirements.
  */
 class ATCommandBuilder {
   public:
     /**
+     * @brief Create a new command buffer initialized with a command base.
+     *
+     * @param cmd The AT command identifier.
+     * @return ATCommandBuffer<128> initialized with the command base.
+     *
+     * @par Example
+     * @code
+     * auto cmd = ATCommandBuilder::begin(AtCommand::SetRole)
+     *     .append("1")
+     *     .finalize();
+     * uart.transmit(cmd.view());
+     * @endcode
+     */
+    static ATCommandBuffer<128> begin(AtCommand cmd) noexcept {
+        ATCommandBuffer<128> buffer;
+        buffer.reset(command_base(cmd));
+        return buffer;
+    }
+
+    /**
      * @brief Build an AT command from a command enum and a list of parameters.
      *
-     * @param cmd   The AT command identifier.
-     * @param params A list of unsigned integer parameters.
-     * @return std::string The fully formed command string, e.g. "AT+ROLE=1\r\n".
+     * @param cmd The AT command identifier.
+     * @param params A list of string_view parameters to append.
+     * @return ATCommandBuffer<128> containing the command (not yet finalized).
+     *
+     * @par Example
+     * @code
+     * auto cmd_buf = ATCommandBuilder::build(AtCommand::SetRole, {"1"});
+     * uart.transmit(cmd_buf.finalize().view());
+     * @endcode
      */
-    static std::string build(AtCommand cmd, std::initializer_list<std::string_view> params) {
-        std::string result = command_base(cmd);
+    static ATCommandBuffer<128> build(AtCommand cmd,
+                                     std::initializer_list<std::string_view> params) noexcept {
+        auto buffer = begin(cmd);
         for (auto p : params) {
-            result += p;
+            buffer.append(p);
         }
-        result += "\r\n";
-        return result;
+        return buffer;
     }
-
-    /**
-     * @brief Overload accepting a std::vector of parameters.
-     */
-    static std::string build(AtCommand cmd, const std::vector<std::string_view>& params) {
-        std::string result = command_base(cmd);
-        for (auto p : params) {
-            result += p;
-        }
-        result += "\r\n";
-        return result;
-    }
-
-    /**
-     * @brief Build an AT command from a command enum and a single uint32_t parameter.
-     */
-    static std::string build(AtCommand cmd, const std::uint32_t& param) { return build(cmd, {std::to_string(param)}); }
 };
 
 } // namespace hm11

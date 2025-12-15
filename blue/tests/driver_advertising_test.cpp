@@ -13,7 +13,7 @@ using namespace hm11;
 
 TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms100) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::Ms100, status));
@@ -23,7 +23,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms100) {
 
 TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms7000) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "F\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "F\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_advertising_interval(AdvertisingInterval::Ms7000, status));
@@ -33,7 +33,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingInterval_ms7000) {
 
 TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Numeric) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "5\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "5\r\n");
     HM11Driver driver(uart);
     AdvertisingInterval interval{};
     Status status = Status::Ok;
@@ -44,7 +44,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Numeric) {
 
 TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Hex) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "A\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "A\r\n");
     HM11Driver driver(uart);
     AdvertisingInterval interval{};
     Status status = Status::Ok;
@@ -57,7 +57,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Hex) {
 
 TEST(HM11DriverAdvertisingTest, SetAdvertisingType_Connectable) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_advertising_type(AdvertisingType::AdvertisingScanResponseConnectable, status));
@@ -67,7 +67,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingType_Connectable) {
 
 TEST(HM11DriverAdvertisingTest, SetAdvertisingType_Advertising) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_advertising_type(AdvertisingType::Advertising, status));
@@ -77,7 +77,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingType_Advertising) {
 
 TEST(HM11DriverAdvertisingTest, GetAdvertisingType) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "2\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "2\r\n");
     HM11Driver driver(uart);
     AdvertisingType type{};
     Status status = Status::Ok;
@@ -90,7 +90,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingType) {
 
 TEST(HM11DriverAdvertisingTest, SetAdvertisingFlag) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "06\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "06\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     util::AdvertisingFlag flag("06");
@@ -103,7 +103,7 @@ TEST(HM11DriverAdvertisingTest, SetAdvertisingFlag) {
 
 TEST(HM11DriverAdvertisingTest, SetTemperatureInformation) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0x1A\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0x1A\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     util::AdvertisingTemperatureType temp("1A");
@@ -116,7 +116,7 @@ TEST(HM11DriverAdvertisingTest, SetTemperatureInformation) {
 
 TEST(HM11DriverAdvertisingTest, SetHumidityInformation) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "3C\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "3C\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     util::HumiInformation humi("3C");
@@ -129,7 +129,7 @@ TEST(HM11DriverAdvertisingTest, SetHumidityInformation) {
 
 TEST(HM11DriverAdvertisingTest, SetModuleAdvertisementData) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0102030405AA\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0102030405AA\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     util::AdvertisementData data("0102030405AA");
@@ -142,7 +142,7 @@ TEST(HM11DriverAdvertisingTest, SetModuleAdvertisementData) {
 
 TEST(HM11DriverAdvertisingTest, SetReliableAdvertisingMode_Normal) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "0\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "0\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_reliable_advertising_mode(AdvertisingMode::NormalAdvertising, status));
@@ -152,7 +152,7 @@ TEST(HM11DriverAdvertisingTest, SetReliableAdvertisingMode_Normal) {
 
 TEST(HM11DriverAdvertisingTest, SetReliableAdvertisingMode_Reliable) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_SET + "1\r\n");
+    uart.set_next_receive(std::string(OK_SET) + "1\r\n");
     HM11Driver driver(uart);
     Status status = Status::Ok;
     EXPECT_TRUE(driver.set_reliable_advertising_mode(AdvertisingMode::ReliableAdvertising, status));
@@ -162,7 +162,7 @@ TEST(HM11DriverAdvertisingTest, SetReliableAdvertisingMode_Reliable) {
 
 TEST(HM11DriverAdvertisingTest, GetReliableAdvertisingMode_Normal) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "0\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "0\r\n");
     HM11Driver driver(uart);
     AdvertisingMode mode{};
     Status status = Status::Ok;
@@ -173,7 +173,7 @@ TEST(HM11DriverAdvertisingTest, GetReliableAdvertisingMode_Normal) {
 
 TEST(HM11DriverAdvertisingTest, GetReliableAdvertisingMode_Reliable) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "1\r\n");
+    uart.set_next_receive(std::string(OK_GET) + "1\r\n");
     HM11Driver driver(uart);
     AdvertisingMode mode{};
     Status status = Status::Ok;
@@ -205,7 +205,7 @@ TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_Error) {
 
 TEST(HM11DriverAdvertisingTest, GetAdvertisingInterval_InvalidChar) {
     MockUARTPort uart;
-    uart.set_next_receive(OK_GET + "Z\r\n");  // Invalid character
+    uart.set_next_receive(std::string(OK_GET) + "Z\r\n");  // Invalid character
     HM11Driver driver(uart);
     AdvertisingInterval interval{};
     Status status = Status::Ok;

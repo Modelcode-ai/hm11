@@ -1,7 +1,14 @@
+// SPDX-FileCopyrightText: 2025
+// SPDX-License-Identifier: MIT
+
+#ifndef HM11_TESTING_ENABLED
+#error "MockUARTPort should only be used in test builds. Define HM11_TESTING_ENABLED to use this header."
+#endif
+
 namespace hm11 {
 
 /**
- * @brief Mock UARTPort for testing.
+ * @brief Mock UARTPort for testing (test-only code).
  *
  * Transmit does nothing (always reports Ok). The next call to receive will
  * return data previously supplied via `set_next_receive`.
@@ -21,6 +28,9 @@ namespace hm11 {
       }
 
       void receive(std::span<uint8_t> buffer, Status& status, unsigned int timeout [[maybe_unused]] = 1000) override {
+          // Clear the buffer first to ensure no leftover data
+          std::fill(buffer.begin(), buffer.end(), 0);
+
           // If we have receive fragments, return them one at a time
           if (!receive_fragments.empty()) {
               const std::string FRAGMENT = receive_fragments.front();  // Copy first
@@ -34,6 +44,7 @@ namespace hm11 {
               for (std::size_t i = 0; i < FRAGMENT.size(); ++i) {
                   buffer[i] = static_cast<uint8_t>(FRAGMENT[i]);
               }
+              // buffer is already zero-filled, so data is null-terminated
               status = Status::Ok;
               return;
           }
@@ -49,6 +60,7 @@ namespace hm11 {
                   buffer[i] = static_cast<uint8_t>(next_receive[i]);
               }
               next_receive.clear();  // Clear after returning once
+              // buffer is already zero-filled, so data is null-terminated
               status = Status::Ok;
               return;
           }

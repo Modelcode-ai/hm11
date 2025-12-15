@@ -70,22 +70,6 @@ template <std::unsigned_integral T> ParseResult<T> parse_uint(std::string_view s
     return parse_int<T>(sv, base);
 }
 
-/// @brief Parse hex character to numeric value
-/// @param c Hex character ('0'-'9', 'A'-'F', 'a'-'f')
-/// @return ParseResult with numeric value (0-15)
-inline ParseResult<uint8_t> parse_hex_char(char c) noexcept {
-    if (c >= '0' && c <= '9') {
-        return {static_cast<uint8_t>(c - '0'), true, {}};
-    }
-    if (c >= 'A' && c <= 'F') {
-        return {static_cast<uint8_t>(c - 'A' + 10), true, {}};
-    }
-    if (c >= 'a' && c <= 'f') {
-        return {static_cast<uint8_t>(c - 'a' + 10), true, {}};
-    }
-    return {0, false, {}};
-}
-
 /// @brief Parse boolean from string ("0" = false, "1" = true)
 /// @param sv String view to parse from
 /// @return ParseResult with parsed boolean
@@ -107,85 +91,12 @@ inline ParseResult<bool> parse_bool(std::string_view sv) noexcept {
 // String tokenization and searching
 // ============================================================================
 
-/// @brief Find substring in string view
-/// @param haystack String to search in
-/// @param needle Substring to find
-/// @param start_pos Starting position for search
-/// @return Position of first occurrence or std::string_view::npos
-constexpr std::size_t find(std::string_view haystack, std::string_view needle, std::size_t start_pos = 0) noexcept {
-    return haystack.find(needle, start_pos);
-}
-
-/// @brief Find character in string view
-/// @param haystack String to search in
-/// @param needle Character to find
-/// @param start_pos Starting position for search
-/// @return Position of first occurrence or std::string_view::npos
-constexpr std::size_t find(std::string_view haystack, char needle, std::size_t start_pos = 0) noexcept {
-    return haystack.find(needle, start_pos);
-}
-
 /// @brief Check if string view starts with given prefix
 /// @param str String to check
 /// @param prefix Prefix to look for
 /// @return true if str starts with prefix
 constexpr bool starts_with(std::string_view str, std::string_view prefix) noexcept {
     return str.starts_with(prefix);
-}
-
-/// @brief Check if string view ends with given suffix
-/// @param str String to check
-/// @param suffix Suffix to look for
-/// @return true if str ends with suffix
-constexpr bool ends_with(std::string_view str, std::string_view suffix) noexcept {
-    return str.size() >= suffix.size() && str.substr(str.size() - suffix.size()) == suffix;
-}
-
-/// @brief Trim whitespace from beginning and end of string view
-/// @param str String to trim
-/// @return Trimmed string view
-constexpr std::string_view trim(std::string_view str) noexcept {
-    const auto is_whitespace = [](char c) {
-        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-    };
-
-    // Trim from start
-    while (!str.empty() && is_whitespace(str.front())) {
-        str.remove_prefix(1);
-    }
-
-    // Trim from end
-    while (!str.empty() && is_whitespace(str.back())) {
-        str.remove_suffix(1);
-    }
-
-    return str;
-}
-
-/// @brief Split string view at first occurrence of delimiter
-/// @param str String to split
-/// @param delimiter Character delimiter
-/// @return Pair of {before_delimiter, after_delimiter}
-constexpr std::pair<std::string_view, std::string_view> split_once(std::string_view str, char delimiter) noexcept {
-    const std::size_t pos = str.find(delimiter);
-    if (pos == std::string_view::npos) {
-        return {str, {}};
-    }
-    return {str.substr(0, pos), str.substr(pos + 1)};
-}
-
-/// @brief Split string view at first occurrence of delimiter string
-/// @param str String to split
-/// @param delimiter String delimiter
-/// @return Pair of {before_delimiter, after_delimiter}
-constexpr std::pair<std::string_view, std::string_view> split_once(
-    std::string_view str,
-    std::string_view delimiter) noexcept {
-    const std::size_t pos = str.find(delimiter);
-    if (pos == std::string_view::npos) {
-        return {str, {}};
-    }
-    return {str.substr(0, pos), str.substr(pos + delimiter.size())};
 }
 
 // ============================================================================
@@ -283,20 +194,6 @@ inline ParseResult<std::string_view> extract_get_response(std::string_view respo
     }
 
     const std::string_view value = response.substr(OK_GET_PREFIX.size());
-    return {value, true, {}};
-}
-
-/// @brief Extract "OK+Set:" response value
-/// @param response Full response string
-/// @return ParseResult with the value portion after "OK+Set:"
-inline ParseResult<std::string_view> extract_set_response(std::string_view response) noexcept {
-    constexpr std::string_view OK_SET_PREFIX = "OK+Set:";
-
-    if (!starts_with(response, OK_SET_PREFIX)) {
-        return {{}, false, response};
-    }
-
-    const std::string_view value = response.substr(OK_SET_PREFIX.size());
     return {value, true, {}};
 }
 
@@ -542,29 +439,6 @@ inline ParseResult<MacAddress> parse_mac_address(std::string_view hex_str) noexc
         return {mac, true, {}};
     } catch (...) {
         return {MacAddress{}, false, hex_str};
-    }
-}
-
-/// @brief Parse UUID from 4-character hex string
-/// @param hex_str Hex string (exactly 4 characters)
-/// @return ParseResult with UUID value
-inline ParseResult<UUID> parse_uuid(std::string_view hex_str) noexcept {
-    if (hex_str.size() != 4) {
-        return {UUID{}, false, hex_str};
-    }
-
-    // Validate all characters are hex
-    for (char c : hex_str) {
-        if ((c < '0' || c > '9') && (c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
-            return {UUID{}, false, hex_str};
-        }
-    }
-
-    try {
-        UUID uuid(hex_str);
-        return {uuid, true, {}};
-    } catch (...) {
-        return {UUID{}, false, hex_str};
     }
 }
 
