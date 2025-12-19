@@ -378,3 +378,10 @@ When adding new examples:
 
 Copyright (c) 2025. Licensed under BSD-3-Clause.
 
+## References
+
+- **Ada Source**: `/l2l/src/hm11/examples/shared/hm11/src/hm11_example.adb`
+- **Driver Documentation**: `../CMAKE_USAGE.md`, `../TESTING.md`
+- **Migration Spec**: Root directory modernization specifications
+- **STM32F429 Reference**: ST RM0090 Reference Manual
+- **HM-11 Datasheet**: JNHuaMao HM-11 Bluetooth 4.0 Module

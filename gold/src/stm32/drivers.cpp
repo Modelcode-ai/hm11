@@ -112,7 +112,7 @@ static RCC_TypeDef stub_rcc;
 #define RCC (&stub_rcc)
 
 // Stub interrupt numbers
-enum IRQn_Type { DMA1_Stream0_IRQn = 11, USART5_IRQn = 53 };
+enum IRQn_Type { DMA1_Stream0_IRQn = 11, UART5_IRQn = 53 };
 
 // Stub NVIC functions
 inline void NVIC_SetPriority(IRQn_Type, uint32_t) {}
@@ -143,33 +143,33 @@ constexpr uint32_t UART_CR1_PEIE = 0x0100U;   // Parity error interrupt enable
 constexpr uint32_t UART_CR3_EIE = 0x0001U;    // Error interrupt enable
 constexpr uint32_t UART_CR3_DMAR = 0x0040U;   // DMA receiver enable
 
-// DMA configuration constants
-constexpr uint32_t DMA_SxCR_EN = 0x00000001U;           // Stream enable
-constexpr uint32_t DMA_SxCR_TCIE = 0x00000010U;         // Transfer complete interrupt enable
-constexpr uint32_t DMA_SxCR_TEIE = 0x00000004U;         // Transfer error interrupt enable
-constexpr uint32_t DMA_SxCR_DMEIE = 0x00000002U;        // Direct mode error interrupt enable
-constexpr uint32_t DMA_SxCR_CHSEL_4 = 0x08000000U;      // Channel 4
-constexpr uint32_t DMA_SxCR_PL_VERY_HIGH = 0x00030000U; // Priority very high
-constexpr uint32_t DMA_SxCR_MSIZE_BYTE = 0x00000000U;   // Memory data size: byte
-constexpr uint32_t DMA_SxCR_PSIZE_BYTE = 0x00000000U;   // Peripheral data size: byte
-constexpr uint32_t DMA_SxCR_MINC = 0x00000400U;         // Memory increment mode
-constexpr uint32_t DMA_SxCR_DIR_P2M = 0x00000000U;      // Direction: peripheral to memory
+// DMA configuration constants (prefixed with k_ to avoid CMSIS macro conflicts)
+constexpr uint32_t kDMA_SxCR_EN = 0x00000001U;           // Stream enable
+constexpr uint32_t kDMA_SxCR_TCIE = 0x00000010U;         // Transfer complete interrupt enable
+constexpr uint32_t kDMA_SxCR_TEIE = 0x00000004U;         // Transfer error interrupt enable
+constexpr uint32_t kDMA_SxCR_DMEIE = 0x00000002U;        // Direct mode error interrupt enable
+constexpr uint32_t kDMA_SxCR_CHSEL_4 = 0x08000000U;      // Channel 4
+constexpr uint32_t kDMA_SxCR_PL_VERY_HIGH = 0x00030000U; // Priority very high
+constexpr uint32_t kDMA_SxCR_MSIZE_BYTE = 0x00000000U;   // Memory data size: byte
+constexpr uint32_t kDMA_SxCR_PSIZE_BYTE = 0x00000000U;   // Peripheral data size: byte
+constexpr uint32_t kDMA_SxCR_MINC = 0x00000400U;         // Memory increment mode
+constexpr uint32_t kDMA_SxCR_DIR_P2M = 0x00000000U;      // Direction: peripheral to memory
 
-constexpr uint32_t DMA_SxFCR_DMDIS = 0x00000004U; // Direct mode disable
-constexpr uint32_t DMA_SxFCR_FEIE = 0x00000080U;  // FIFO error interrupt enable
+constexpr uint32_t kDMA_SxFCR_DMDIS = 0x00000004U; // Direct mode disable
+constexpr uint32_t kDMA_SxFCR_FEIE = 0x00000080U;  // FIFO error interrupt enable
 
-// RCC clock enable bits
-constexpr uint32_t RCC_AHB1ENR_GPIOCEN = 0x00000004U; // GPIOC clock enable
-constexpr uint32_t RCC_AHB1ENR_GPIODEN = 0x00000008U; // GPIOD clock enable
-constexpr uint32_t RCC_AHB1ENR_DMA1EN = 0x00200000U;  // DMA1 clock enable
-constexpr uint32_t RCC_APB1ENR_UART5EN = 0x00100000U; // UART5 clock enable
+// RCC clock enable bits (prefixed with k_ to avoid CMSIS macro conflicts)
+constexpr uint32_t kRCC_AHB1ENR_GPIOCEN = 0x00000004U; // GPIOC clock enable
+constexpr uint32_t kRCC_AHB1ENR_GPIODEN = 0x00000008U; // GPIOD clock enable
+constexpr uint32_t kRCC_AHB1ENR_DMA1EN = 0x00200000U;  // DMA1 clock enable
+constexpr uint32_t kRCC_APB1ENR_UART5EN = 0x00100000U; // UART5 clock enable
 
-// DMA interrupt flag clear bits (for Stream 0 in LIFCR)
-constexpr uint32_t DMA_LIFCR_CTCIF0 = 0x00000020U;  // Clear transfer complete flag
-constexpr uint32_t DMA_LIFCR_CHTIF0 = 0x00000010U;  // Clear half transfer flag
-constexpr uint32_t DMA_LIFCR_CTEIF0 = 0x00000008U;  // Clear transfer error flag
-constexpr uint32_t DMA_LIFCR_CDMEIF0 = 0x00000004U; // Clear direct mode error flag
-constexpr uint32_t DMA_LIFCR_CFEIF0 = 0x00000001U;  // Clear FIFO error flag
+// DMA interrupt flag clear bits (for Stream 0 in LIFCR, prefixed with k_)
+constexpr uint32_t kDMA_LIFCR_CTCIF0 = 0x00000020U;  // Clear transfer complete flag
+constexpr uint32_t kDMA_LIFCR_CHTIF0 = 0x00000010U;  // Clear half transfer flag
+constexpr uint32_t kDMA_LIFCR_CTEIF0 = 0x00000008U;  // Clear transfer error flag
+constexpr uint32_t kDMA_LIFCR_CDMEIF0 = 0x00000004U; // Clear direct mode error flag
+constexpr uint32_t kDMA_LIFCR_CFEIF0 = 0x00000001U;  // Clear FIFO error flag
 
 /**
  * @brief Calculate UART BRR register value for given baud rate
@@ -279,13 +279,13 @@ void init_uart() noexcept {
 
 #if defined(STM32F429xx) || defined(STM32F4)
     // Enable GPIOC clock (for PC12 - UART5_TX)
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
+    RCC->AHB1ENR |= kRCC_AHB1ENR_GPIOCEN;
 
     // Enable GPIOD clock (for PD2 - UART5_RX)
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+    RCC->AHB1ENR |= kRCC_AHB1ENR_GPIODEN;
 
     // Enable UART5 clock (APB1 peripheral)
-    RCC->APB1ENR |= RCC_APB1ENR_UART5EN;
+    RCC->APB1ENR |= kRCC_APB1ENR_UART5EN;
 #endif
 
     // Step 2: Configure GPIO pins for UART5
@@ -365,7 +365,7 @@ void initialize_dma() noexcept {
     // Ada: Enable_Clock (Controller) drivers.adb:419
 
 #if defined(STM32F429xx) || defined(STM32F4)
-    RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+    RCC->AHB1ENR |= kRCC_AHB1ENR_DMA1EN;
 #endif
 
     // Step 2: Reset DMA1 Stream 0
@@ -373,19 +373,19 @@ void initialize_dma() noexcept {
 
 #if defined(STM32F429xx) || defined(STM32F4)
     // Disable stream
-    DMA1_Stream0->CR &= ~DMA_SxCR_EN;
+    DMA1_Stream0->CR &= ~kDMA_SxCR_EN;
 
     // Wait until stream is disabled (EN bit reads 0)
-    while ((DMA1_Stream0->CR & DMA_SxCR_EN) != 0) {
+    while ((DMA1_Stream0->CR & kDMA_SxCR_EN) != 0) {
         // Busy wait
     }
 
     // Clear all interrupt flags for Stream 0 (in LIFCR register)
-    DMA1->LIFCR |= DMA_LIFCR_CTCIF0 |  // Transfer complete
-                   DMA_LIFCR_CHTIF0 |  // Half transfer
-                   DMA_LIFCR_CTEIF0 |  // Transfer error
-                   DMA_LIFCR_CDMEIF0 | // Direct mode error
-                   DMA_LIFCR_CFEIF0;   // FIFO error
+    DMA1->LIFCR |= kDMA_LIFCR_CTCIF0 |  // Transfer complete
+                   kDMA_LIFCR_CHTIF0 |  // Half transfer
+                   kDMA_LIFCR_CTEIF0 |  // Transfer error
+                   kDMA_LIFCR_CDMEIF0 | // Direct mode error
+                   kDMA_LIFCR_CFEIF0;   // FIFO error
 #endif
 
     // Step 3: Configure DMA1 Stream 0
@@ -394,17 +394,17 @@ void initialize_dma() noexcept {
 #if defined(STM32F429xx) || defined(STM32F4)
     // Configure stream control register
     uint32_t cr = 0;
-    cr |= DMA_SxCR_CHSEL_4;      // Channel 4 (UART5_RX)
-    cr |= DMA_SxCR_DIR_P2M;      // Direction: peripheral to memory
-    cr |= DMA_SxCR_MINC;         // Memory increment enabled
-    cr |= DMA_SxCR_PSIZE_BYTE;   // Peripheral data size: byte
-    cr |= DMA_SxCR_MSIZE_BYTE;   // Memory data size: byte
-    cr |= DMA_SxCR_PL_VERY_HIGH; // Priority: very high
+    cr |= kDMA_SxCR_CHSEL_4;      // Channel 4 (UART5_RX)
+    cr |= kDMA_SxCR_DIR_P2M;      // Direction: peripheral to memory
+    cr |= kDMA_SxCR_MINC;         // Memory increment enabled
+    cr |= kDMA_SxCR_PSIZE_BYTE;   // Peripheral data size: byte
+    cr |= kDMA_SxCR_MSIZE_BYTE;   // Memory data size: byte
+    cr |= kDMA_SxCR_PL_VERY_HIGH; // Priority: very high
     // CIRC bit not set = Normal mode (not circular)
     // Enable interrupts: TC, TE, DME
-    cr |= DMA_SxCR_TCIE;  // Transfer complete interrupt
-    cr |= DMA_SxCR_TEIE;  // Transfer error interrupt
-    cr |= DMA_SxCR_DMEIE; // Direct mode error interrupt
+    cr |= kDMA_SxCR_TCIE;  // Transfer complete interrupt
+    cr |= kDMA_SxCR_TEIE;  // Transfer error interrupt
+    cr |= kDMA_SxCR_DMEIE; // Direct mode error interrupt
 
     DMA1_Stream0->CR = cr;
 
@@ -420,7 +420,7 @@ void initialize_dma() noexcept {
     // Configure FIFO control register
     // Disable FIFO (use direct mode)
     // Enable FIFO error interrupt
-    DMA1_Stream0->FCR = DMA_SxFCR_FEIE;
+    DMA1_Stream0->FCR = kDMA_SxFCR_FEIE;
     // Note: DMDIS=0 means direct mode enabled (FIFO disabled)
 #endif
 
@@ -453,14 +453,14 @@ void initialize_dma() noexcept {
     // - DMA1 Stream 0: Priority 5 (time-critical DMA transfers)
     // - UART5: Priority 6 (can be interrupted by DMA)
     NVIC_SetPriority(DMA1_Stream0_IRQn, 5); // DMA priority: 5 (higher)
-    NVIC_SetPriority(USART5_IRQn, 6);       // UART priority: 6 (lower)
+    NVIC_SetPriority(UART5_IRQn, 6);        // UART priority: 6 (lower)
 
     // Enable interrupts in NVIC
     // These interrupts will fire when hardware events occur, calling the
-    // extern "C" wrappers (USART5_IRQHandler, DMA1_Stream0_IRQHandler) which
+    // extern "C" wrappers (UART5_IRQHandler, DMA1_Stream0_IRQHandler) which
     // delegate to the C++ handler classes (UARTIRQHandler, DMAIRQHandler).
     NVIC_EnableIRQ(DMA1_Stream0_IRQn); // Enable DMA1 Stream 0 interrupt
-    NVIC_EnableIRQ(USART5_IRQn);       // Enable UART5 interrupt
+    NVIC_EnableIRQ(UART5_IRQn);        // Enable UART5 interrupt
 #endif
 }
 

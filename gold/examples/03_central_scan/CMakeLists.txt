@@ -1,42 +1,39 @@
-/**
- * @file CMakeLists.txt
- * @brief Build configuration for 03_central_scan example
- *
- * This CMakeLists.txt builds the central scanner example for both
- * embedded (STM32F429) and native (x86 Linux) targets.
- *
- * ## Embedded Target (STM32F429)
- *
- * When building with an embedded preset (e.g., stm32f429-debug):
- * - Links against hm11_platform (STM32 drivers)
- * - Uses real UART5 and DMA hardware
- * - Produces .elf and .bin files for flashing
- * - LED macros control hardware GPIO pins
- *
- * ## Native Target (Testing)
- *
- * When building for native target (default preset):
- * - Example is NOT built (no hardware available)
- * - Test version is built separately in tests/examples/
- * - Uses EnhancedMockUART for simulation
- * - LED macros are mocked for validation
- *
- * ## Usage
- *
- * Build for embedded target:
- * ```bash
- * cmake --preset stm32f429-debug
- * cmake --build --preset stm32f429-debug
- * # Flash: examples/03_central_scan/03_central_scan.bin
- * ```
- *
- * Build tests (native target):
- * ```bash
- * cmake --preset default
- * cmake --build --preset default
- * ctest --preset default -R test_03_central_scan
- * ```
- */
+# ==============================================================================
+# CMakeLists.txt - Build configuration for 03_central_scan example
+# ==============================================================================
+#
+# This CMakeLists.txt builds the central scanner example for both
+# embedded (STM32F429) and native (x86 Linux) targets.
+#
+# ## Embedded Target (STM32F429)
+#
+# When building with an embedded preset (e.g., stm32f429-debug):
+# - Links against hm11_platform (STM32 drivers)
+# - Uses real UART5 and DMA hardware
+# - Produces .elf and .bin files for flashing
+# - LED macros control hardware GPIO pins
+#
+# ## Native Target (Testing)
+#
+# When building for native target (default preset):
+# - Example is NOT built (no hardware available)
+# - Test version is built separately in tests/examples/
+# - Uses EnhancedMockUART for simulation
+# - LED macros are mocked for validation
+#
+# ## Usage
+#
+# Build for embedded target:
+#   cmake --preset stm32f429-debug
+#   cmake --build --preset stm32f429-debug
+#   # Flash: examples/03_central_scan/03_central_scan.bin
+#
+# Build tests (native target):
+#   cmake --preset default
+#   cmake --build --preset default
+#   ctest --preset default -R test_03_central_scan
+#
+# ==============================================================================
 
 # Only build examples for embedded targets
 # Native targets use test versions in tests/examples/
