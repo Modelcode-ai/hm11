@@ -131,8 +131,8 @@ constexpr std::string_view WHEN_DISCONNECTED_MESSAGE = "OK+LOST";
  *
  * Ada source: hm11_example.adb:88-98
  */
-void check_status(UartStatus status) noexcept {
-    if (status != UartStatus::Ok) {
+void check_status(hm11::hal::UartStatus status) noexcept {
+    if (status != hm11::hal::UartStatus::Ok) {
         on_error();
     }
 }
@@ -299,7 +299,7 @@ int main() {
             }
 
             // Check if disconnection message received
-            std::string_view received{reinterpret_cast<const char*>(echo_buffer.data()), data.size};
+            std::string_view received{reinterpret_cast<const char*>(echo_buffer.data()), data.size()};
             if (received == WHEN_DISCONNECTED_MESSAGE) {
                 // Disconnected - indicate and exit echo loop
                 LED_GREEN_OFF();

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(HM11Driver VERSION 1.0.0 LANGUAGES CXX)
+project(HM11Driver VERSION 1.0.0 LANGUAGES C CXX ASM)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -217,6 +217,12 @@ if(IS_EMBEDDED_TARGET)
     # STM32 hardware initialization and driver instance
     list(APPEND PLATFORM_SOURCES
         src/stm32/drivers.cpp
+    )
+    # STM32 startup code (Reset_Handler, vector table, system init)
+    list(APPEND PLATFORM_SOURCES
+        src/stm32/startup/startup_stm32f429zitx.s
+        src/stm32/startup/system_stm32f4xx.c
+        src/stm32/startup/syscalls.c
     )
     message(STATUS "Using ARM Cortex-M platform implementation (WFE/SEV)")
 else()
@@ -721,9 +727,11 @@ add_custom_target(run-all-tests
 )
 
 # Installation rules (for future use)
-install(TARGETS hm11_driver
-    RUNTIME DESTINATION bin
-)
+if(NOT IS_EMBEDDED_TARGET AND TARGET hm11_driver)
+    install(TARGETS hm11_driver
+        RUNTIME DESTINATION bin
+    )
+endif()
 
 install(DIRECTORY include/hm11
     DESTINATION include

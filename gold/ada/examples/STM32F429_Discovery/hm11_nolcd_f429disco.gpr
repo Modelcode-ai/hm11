@@ -1,0 +1,31 @@
+--  HM-11 Example without LCD - for fair size comparison with C++ version
+--
+--  This project builds the no-LCD version of the HM-11 example.
+--  It uses the SFP (Small Footprint Profile) BSP to minimize code size.
+--
+--  Build:
+--    gprbuild -P hm11_nolcd_f429disco.gpr -p --target=arm-eabi \
+--             --RTS=light-tasking-stm32f429disco
+
+with "../../boards/stm32f429_discovery/stm32f429_discovery_sfp.gpr";
+
+project HM11_NoLCD_F429Disco extends "../shared/common/common.gpr" is
+
+  for Runtime ("Ada") use STM32F429_Discovery_SFP'Runtime("Ada");
+  for Target use "arm-eabi";
+  for Main use ("hm11_example_nolcd.adb");
+  for Languages use ("Ada");
+  for Source_Dirs use ("../shared/hm11/src");
+  for Object_Dir use "../shared/hm11/obj/stm32f429disco_nolcd";
+  for Create_Missing_Dirs use "True";
+
+  package Compiler renames STM32F429_Discovery_SFP.Compiler;
+
+  package Linker is
+     --  Enable garbage collection of unused sections
+     for Default_Switches ("Ada") use
+       ("-Wl,--gc-sections",
+        "-Wl,--print-memory-usage");
+  end Linker;
+
+end HM11_NoLCD_F429Disco;
