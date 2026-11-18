@@ -306,6 +306,7 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
         tests/test_watchdog.cpp
         tests/test_enum_mapping.cpp
         tests/test_parsing_utils.cpp
+        tests/test_type_aliases.cpp
         tests/util/command_builder_test.cpp
         tests/test_hm11_driver_core.cpp
         tests/test_hm11_driver_advertising.cpp
