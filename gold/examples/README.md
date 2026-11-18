@@ -206,7 +206,7 @@ cmake --build --preset stm32f429-debug
 cmake --build --preset stm32f429-debug --target 01_basic_init
 
 # Example outputs (in build directory):
-# - examples/01_basic_init/01_basic_init.elf  (ELF with debug symbols)
+# - examples/01_basic_init/01_basic_init      (ELF with debug symbols)
 # - examples/01_basic_init/01_basic_init.bin  (Raw binary for flashing)
 # - examples/01_basic_init/01_basic_init.hex  (Intel HEX format)
 ```
@@ -234,7 +234,7 @@ ctest --preset default -R test_01_basic_init
 ```bash
 # Flash example binary
 openocd -f board/stm32f429discovery.cfg \
-    -c "program examples/01_basic_init/01_basic_init.elf verify reset exit"
+    -c "program examples/01_basic_init/01_basic_init verify reset exit"
 ```
 
 ### Using ST-Link Utility
@@ -261,7 +261,7 @@ st-flash write examples/01_basic_init/01_basic_init.bin 0x08000000
 openocd -f board/stm32f429discovery.cfg
 
 # Terminal 2: Start GDB
-arm-none-eabi-gdb examples/01_basic_init/01_basic_init.elf
+arm-none-eabi-gdb examples/01_basic_init/01_basic_init
 (gdb) target remote :3333
 (gdb) monitor reset halt
 (gdb) load
