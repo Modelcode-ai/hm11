@@ -13,13 +13,13 @@ Tests parsing utilities with malformed UART data:
 - CRLF handling and string operations
 
 ### 2. `fuzz_fixed_string.cpp`
-Tests FixedString character validators:
-- HexCharValidator (validates '0'-'9', 'A'-'F')
-- DigitCharValidator (validates '0'-'9')
+Tests ada::FixedString character validators:
+- ada::HexDigit (validates '0'-'9', 'A'-'F')
+- ada::DecimalDigit (validates '0'-'9')
 - Pre-validates inputs before construction (embedded code uses assertions)
 
 ### 3. `fuzz_ranged_integer.cpp`
-Tests RangedInteger arithmetic:
+Tests ada::RangedInteger arithmetic:
 - Construction within bounds
 - Arithmetic operations (addition, subtraction)
 - Only tests valid operations (embedded code uses assertions for overflow)

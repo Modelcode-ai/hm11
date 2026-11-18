@@ -2427,7 +2427,7 @@ class HM11Driver {
      * @post Module PIN code configured to specified value
      *
      * @note Default: "000000"
-     * @note PIN must be 6 decimal digits (enforced by FixedString<6, DigitCharValidator>)
+     * @note PIN must be 6 decimal digits (enforced by PinType)
      * @note PIN is used only when bond mode requires authentication
      *
      * Corresponds to Ada's Set_PIN_Code procedure (hm11.adb:2171-2181)
@@ -2550,7 +2550,7 @@ class HM11Driver {
      * @note This command added in V523
      * @note White list capacity: 3 addresses maximum (indices 1-3)
      * @note Index enforced by RangedInteger<uint8_t, 1, 3>
-     * @note MAC address format: 12 hexadecimal characters (enforced by FixedString<12, HexCharValidator>)
+     * @note MAC address format: 12 hexadecimal characters (enforced by MacAddress)
      * @note White list must be enabled via Set_White_List_Switch to take effect
      *
      * Corresponds to Ada's Set_White_List_MAC_Addresses procedure (hm11.adb:822-834)
@@ -2622,7 +2622,7 @@ class HM11Driver {
      * @post status == UartStatus::Ok if service UUID set successfully
      * @post Module advertises specified service UUID
      *
-     * @note UUID format: 4 hexadecimal characters (enforced by FixedString<4, HexCharValidator>)
+     * @note UUID format: 4 hexadecimal characters (enforced by UUID)
      * @note Example: "180F" (Battery Service UUID)
      * @note HM-11 only supports 16-bit UUIDs, not full 128-bit UUIDs
      * @note Command includes "0x" prefix: "AT+UUID0x180F"

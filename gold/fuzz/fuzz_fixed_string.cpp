@@ -3,7 +3,7 @@
  * @brief LibFuzzer target for FixedString template
  *
  * This fuzzer tests the FixedString template for:
- * - Character validation (HexCharValidator, DigitCharValidator)
+ * - Character validation (ada::HexDigit, ada::DecimalDigit)
  * - Bounds checking on construction
  * - Assertion failures on invalid input
  * - Edge cases in operator overloads
@@ -24,14 +24,13 @@
 #include <string>
 #include <string_view>
 
-#include "hm11/types/fixed_string.hpp"
-#include "hm11/types/validators.hpp"
+#include "ada/fixed_string.hpp"
 
 // Test with common FixedString sizes used in the codebase
-using MacAddress = hm11::FixedString<12, hm11::HexCharValidator>;
-using PinCode = hm11::FixedString<6, hm11::DigitCharValidator>;
-using UUID = hm11::FixedString<4, hm11::HexCharValidator>;
-using IBeaconUuid = hm11::FixedString<32, hm11::HexCharValidator>;
+using MacAddress = ada::FixedString<12, ada::HexDigit, struct MacAddressTag>;
+using PinCode = ada::FixedString<6, ada::DecimalDigit, struct PinCodeTag>;
+using UUID = ada::FixedString<4, ada::HexDigit, struct UUIDTag>;
+using IBeaconUuid = ada::FixedString<32, ada::HexDigit, struct IBeaconUuidTag>;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size == 0) {
@@ -42,6 +41,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::string input_str(reinterpret_cast<const char*>(data), size);
     std::string_view input(input_str);
 
+    // Checked construction must accept or reject any input without asserting.
+    if (auto mac = MacAddress::try_make(input)) {
+        (void)mac->view();
+    }
+    (void)PinCode::try_make(input);
+    (void)UUID::try_make(input);
+    (void)IBeaconUuid::try_make(input);
+
     // ========================================================================
     // Fuzz 1: MAC Address (12 hex chars)
     // ========================================================================
@@ -49,7 +56,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         // Pre-validate to avoid assertion failures
         bool all_hex = true;
         for (size_t i = 0; i < 12; ++i) {
-            if (!hm11::HexCharValidator::is_valid(input_str[i])) {
+            if (!ada::HexDigit::is_valid(input_str[i])) {
                 all_hex = false;
                 break;
             }
@@ -78,7 +85,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size == 6) {
         bool all_digits = true;
         for (size_t i = 0; i < 6; ++i) {
-            if (!hm11::DigitCharValidator::is_valid(input_str[i])) {
+            if (!ada::DecimalDigit::is_valid(input_str[i])) {
                 all_digits = false;
                 break;
             }
@@ -98,7 +105,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size == 4) {
         bool all_hex = true;
         for (size_t i = 0; i < 4; ++i) {
-            if (!hm11::HexCharValidator::is_valid(input_str[i])) {
+            if (!ada::HexDigit::is_valid(input_str[i])) {
                 all_hex = false;
                 break;
             }
@@ -120,7 +127,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size == 32) {
         bool all_hex = true;
         for (size_t i = 0; i < 32; ++i) {
-            if (!hm11::HexCharValidator::is_valid(input_str[i])) {
+            if (!ada::HexDigit::is_valid(input_str[i])) {
                 all_hex = false;
                 break;
             }
@@ -146,10 +153,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         char test_char = static_cast<char>(data[0]);
 
         // Test hex validator
-        (void)hm11::HexCharValidator::is_valid(test_char);
+        (void)ada::HexDigit::is_valid(test_char);
 
         // Test digit validator
-        (void)hm11::DigitCharValidator::is_valid(test_char);
+        (void)ada::DecimalDigit::is_valid(test_char);
     }
 
     // ========================================================================
@@ -170,7 +177,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size >= 12) {
         bool all_hex = true;
         for (size_t i = 0; i < 12; ++i) {
-            if (!hm11::HexCharValidator::is_valid(input_str[i])) {
+            if (!ada::HexDigit::is_valid(input_str[i])) {
                 all_hex = false;
                 break;
             }

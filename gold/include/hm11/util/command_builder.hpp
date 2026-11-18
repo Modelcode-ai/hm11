@@ -157,15 +157,11 @@
 #include <type_traits>
 
 #include "hm11/types/enums.hpp"
-#include "hm11/types/fixed_string.hpp"
-#include "hm11/types/ranged_integer.hpp"
+#include "ada/fixed_string.hpp"
+#include "ada/ranged_integer.hpp"
 #include "hm11/util/enum_mapping.hpp"
 
 namespace hm11::util {
-
-// Bring types into scope for template parameters
-using hm11::FixedString;
-using hm11::types::RangedInteger;
 
 /**
  * @brief Maximum size for AT command buffer
@@ -379,8 +375,8 @@ class CommandBuilder {
      * builder.append("AT+CON").append(mac); // "AT+CONB4994C123456"
      * @endcode
      */
-    template <std::size_t N, typename Validator>
-    constexpr CommandBuilder& append(const FixedString<N, Validator>& fs) noexcept {
+    template <std::size_t N, typename Validator, typename Tag>
+    constexpr CommandBuilder& append(const ada::FixedString<N, Validator, Tag>& fs) noexcept {
         return append(fs.view());
     }
 
@@ -404,7 +400,7 @@ class CommandBuilder {
      * @endcode
      */
     template <typename T, T Min, T Max, typename Tag>
-    constexpr CommandBuilder& append(const RangedInteger<T, Min, Max, Tag>& ri) noexcept {
+    constexpr CommandBuilder& append(const ada::RangedInteger<T, Min, Max, Tag>& ri) noexcept {
         T value = ri.get();
 
         // Handle negative values (though most HM-11 types are unsigned)

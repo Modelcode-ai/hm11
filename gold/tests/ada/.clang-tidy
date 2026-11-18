@@ -1,0 +1,7 @@
+InheritParentConfig: true
+CheckOptions:
+  # Test locals are often const or constexpr; they need not be UPPER_CASE like driver constants
+  - key: readability-identifier-naming.ConstantCase
+    value: aNy_CasE
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: aNy_CasE
