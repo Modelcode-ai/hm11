@@ -19,6 +19,7 @@ cmake_install.cmake
 Makefile
 *.cmake
 !CMakeLists.txt
+!**/cmake/toolchains/*.cmake
 compile_commands.json
 
 # Object files and libraries

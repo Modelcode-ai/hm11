@@ -26,6 +26,7 @@ sudo pacman -S arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
 
 **Manual Installation:**
 Download from [ARM Developer](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) and add to PATH.
+If you'd rather not change PATH, set `ARM_TOOLCHAIN_PATH` to the toolchain's `bin/` directory; `cmake/toolchains/arm-none-eabi.cmake` picks it up.
 
 Verify installation:
 ```bash

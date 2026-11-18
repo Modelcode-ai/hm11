@@ -463,7 +463,7 @@ void DMAIRQHandler::handle_dma_interrupt() noexcept {
  * uses std::atomic with appropriate memory ordering (release/acquire) for
  * ISR-to-thread synchronization.
  */
-extern "C" void USART5_IRQHandler() {
+extern "C" void UART5_IRQHandler() {
     hm11::stm32::UARTIRQHandler::handle_uart_interrupt();
 }
 
@@ -474,7 +474,7 @@ extern "C" void USART5_IRQHandler() {
  * code (startup_stm32f429xx.s or .c). When a DMA1 Stream 0 interrupt fires, the
  * ARM Cortex-M exception mechanism calls this function.
  *
- * See USART5_IRQHandler() documentation for detailed explanation of wrapper
+ * See UART5_IRQHandler() documentation for detailed explanation of wrapper
  * pattern, implementation rationale, and memory ordering.
  */
 extern "C" void DMA1_Stream0_IRQHandler() {

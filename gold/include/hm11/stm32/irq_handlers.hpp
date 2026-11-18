@@ -41,7 +41,7 @@
  * };
  *
  * // Extern C wrapper (matches vector table signature)
- * extern "C" void USART5_IRQHandler() {
+ * extern "C" void UART5_IRQHandler() {
  *     UARTIRQHandler::handle_uart_interrupt();
  * }
  * @endcode
@@ -163,16 +163,16 @@
  *
  * **startup_stm32f429xx.s (vector table):**
  * @code{.asm}
- * .word USART5_IRQHandler    // Vector table entry
+ * .word UART5_IRQHandler    // Vector table entry
  * .word DMA1_Stream0_IRQHandler
  *
- * .weak USART5_IRQHandler    // Weak default handler
- * .thumb_set USART5_IRQHandler,Default_Handler
+ * .weak UART5_IRQHandler    // Weak default handler
+ * .thumb_set UART5_IRQHandler,Default_Handler
  * @endcode
  *
  * **Our override (irq_handlers.cpp):**
  * @code
- * extern "C" void USART5_IRQHandler() {
+ * extern "C" void UART5_IRQHandler() {
  *     UARTIRQHandler::handle_uart_interrupt();
  * }
  * @endcode
@@ -304,7 +304,7 @@ namespace hm11::stm32 {
  *     static void handle_uart_interrupt() noexcept;
  * };
  *
- * extern "C" void USART5_IRQHandler() {
+ * extern "C" void UART5_IRQHandler() {
  *     UARTIRQHandler::handle_uart_interrupt();
  * }
  * @endcode
@@ -312,7 +312,7 @@ namespace hm11::stm32 {
  * ## Interrupt Processing Flow
  *
  * When UART5 interrupt fires:
- * 1. Hardware saves context and calls `USART5_IRQHandler()` extern C wrapper
+ * 1. Hardware saves context and calls `UART5_IRQHandler()` extern C wrapper
  * 2. Wrapper calls `UARTIRQHandler::handle_uart_interrupt()`
  * 3. ISR checks hardware status flags (CMSIS register access)
  * 4. ISR checks timeout deadline: `if (watchdog_->check_deadline())`
@@ -382,7 +382,7 @@ class UARTIRQHandler {
     /**
      * @brief UART interrupt service routine entry point
      *
-     * This static method is called by the extern C wrapper `USART5_IRQHandler()`
+     * This static method is called by the extern C wrapper `UART5_IRQHandler()`
      * when a UART5 interrupt fires. It implements the complete ISR logic following
      * Ada's `On_UART_IRQ` procedure (drivers.adb:246-316).
      *
@@ -420,7 +420,7 @@ class UARTIRQHandler {
      * implementation for test/mock environments.
      *
      * @note ISR-safe: Yes (noexcept, non-blocking, non-allocating)
-     * @note Called from: extern C USART5_IRQHandler() wrapper
+     * @note Called from: extern C UART5_IRQHandler() wrapper
      * @note Context: Interrupt context (cannot call blocking functions)
      *
      * @pre initialize() must have been called
@@ -659,13 +659,13 @@ class DMAIRQHandler {
  *
  * **Startup code (startup_stm32f429xx.s):**
  * @code{.asm}
- * .weak USART5_IRQHandler
- * .thumb_set USART5_IRQHandler,Default_Handler
+ * .weak UART5_IRQHandler
+ * .thumb_set UART5_IRQHandler,Default_Handler
  * @endcode
  *
  * **Our strong symbol override (irq_handlers.cpp):**
  * @code
- * extern "C" void USART5_IRQHandler() {
+ * extern "C" void UART5_IRQHandler() {
  *     hm11::stm32::UARTIRQHandler::handle_uart_interrupt();
  * }
  * @endcode
@@ -706,7 +706,7 @@ extern "C" {
  * @note This function must have C linkage to override the weak symbol in startup code
  * @note Implementation immediately delegates to UARTIRQHandler::handle_uart_interrupt()
  */
-void USART5_IRQHandler();
+void UART5_IRQHandler();
 
 /**
  * @brief DMA1 Stream 0 interrupt vector table entry point
