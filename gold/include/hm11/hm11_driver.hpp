@@ -4121,7 +4121,7 @@ void HM11Driver<UARTImpl, ReceiveHandler>::get_discovery_time(
         const auto TIME_CHAR = static_cast<char>(buffer[OK_GET.size()]);
         const auto TIME_VALUE = char_to_digit(TIME_CHAR);
 
-        // DiscoveryTime is RangedInteger<uint8_t, 1, 9>
+        // DiscoveryTime is an ada::IntegerSubtype of Positive, range 1 .. 9
         // Validation happens in constructor
         time = types::DiscoveryTime{TIME_VALUE};
     }
@@ -4132,7 +4132,7 @@ template <typename UARTImpl, typename ReceiveHandler>
 void HM11Driver<UARTImpl, ReceiveHandler>::set_discovery_time(
     types::DiscoveryTime time,
     hal::UartStatus& status) noexcept {
-    // Convert RangedInteger to string
+    // Convert DiscoveryTime to string
     const auto TIME_VALUE = time.get();
     char time_char = static_cast<char>('0' + TIME_VALUE);
     std::string_view time_str(&time_char, 1);

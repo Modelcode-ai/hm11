@@ -4,7 +4,7 @@
  *
  * This main function demonstrates the usage of various type aliases and
  * enum classes from the HM11 driver's strong type system. It verifies that:
- * - RangedInteger types enforce compile-time and runtime bounds
+ * - RangedInteger and IntegerSubtype types enforce compile-time and runtime bounds
  * - FixedString types enforce character validation
  * - Enum classes provide type-safe enumerations
  * - All templates compile and work correctly
@@ -27,9 +27,9 @@ int main() {
     fmt::print("\n=== HM11 Driver Type System Demo ===\n\n");
 
     // ========================================================================
-    // 1. RangedInteger Types Demonstration
+    // 1. Range-Constrained Integer Types Demonstration
     // ========================================================================
-    fmt::print("1. RangedInteger Types (with compile-time range validation):\n");
+    fmt::print("1. Range-Constrained Integer Types (with compile-time range validation):\n");
     fmt::print("   --------------------------------------------------------\n");
 
     using namespace hm11::types;

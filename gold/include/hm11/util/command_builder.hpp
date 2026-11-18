@@ -150,6 +150,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -158,6 +159,7 @@
 
 #include "hm11/types/enums.hpp"
 #include "ada/fixed_string.hpp"
+#include "ada/integer_subtype.hpp"
 #include "ada/ranged_integer.hpp"
 #include "hm11/util/enum_mapping.hpp"
 
@@ -401,7 +403,23 @@ class CommandBuilder {
      */
     template <typename T, T Min, T Max, typename Tag>
     constexpr CommandBuilder& append(const ada::RangedInteger<T, Min, Max, Tag>& ri) noexcept {
-        T value = ri.get();
+        return append_decimal(ri.get());
+    }
+
+    /**
+     * @brief Append any ada::IntegerSubtype (e.g. DiscoveryTime, PioNumber) as a decimal string
+     *
+     * Without this overload the subtype would convert to int and then to char, appending a raw byte.
+     */
+    template <typename Parent, auto Min, auto Max>
+    constexpr CommandBuilder& append(const ada::IntegerSubtype<Parent, Min, Max>& sub) noexcept {
+        return append_decimal(sub.get());
+    }
+
+    /**
+     * @brief Append an integer as a decimal string
+     */
+    template <std::integral T> constexpr CommandBuilder& append_decimal(T value) noexcept {
 
         // Handle negative values (though most HM-11 types are unsigned)
         if constexpr (std::is_signed_v<T>) {

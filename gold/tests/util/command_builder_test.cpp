@@ -202,7 +202,7 @@ TEST(CommandBuilderTest, AppendWorkInterval) {
 }
 
 // =============================================================================
-// RangedInteger Append Tests
+// RangedInteger and IntegerSubtype Append Tests
 // =============================================================================
 
 TEST(CommandBuilderTest, AppendRangedIntegerSingleDigit) {
@@ -226,7 +226,7 @@ TEST(CommandBuilderTest, AppendRangedIntegerZero) {
     EXPECT_EQ(builder.get(), "AT+COLA0");
 }
 
-TEST(CommandBuilderTest, AppendRangedIntegerMaxValue) {
+TEST(CommandBuilderTest, AppendIntegerSubtypeMaxValue) {
     TemperatureType temp{120};
     CommandBuilder builder;
     builder.append("Temp: ").append(temp);

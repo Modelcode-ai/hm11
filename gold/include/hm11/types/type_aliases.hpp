@@ -59,6 +59,7 @@
 
 #include "ada/char_validators.hpp"
 #include "ada/fixed_string.hpp"
+#include "ada/integer_subtype.hpp"
 #include "ada/ranged_integer.hpp"
 
 namespace hm11::types {
@@ -73,12 +74,6 @@ namespace hm11::types {
 /// @brief Tag for Percent type (battery percentage, humidity)
 struct PercentTag {};
 
-/// @brief Tag for Temperature_Type (sensor temperature in Celsius)
-struct TemperatureTag {};
-
-/// @brief Tag for Humidity_Type (sensor humidity percentage)
-struct HumidityTag {};
-
 /// @brief Tag for Layer_Connection_Latency (connection latency parameter)
 struct LayerConnectionLatencyTag {};
 
@@ -88,20 +83,14 @@ struct PIOCollectionRateTag {};
 /// @brief Tag for MAC_White_List_Index (white list index 1-3)
 struct MACWhiteListIndexTag {};
 
-/// @brief Tag for Discovery_Time (discovery time in seconds 1-9)
-struct DiscoveryTimeTag {};
-
 /// @brief Tag for Discovered_Index (index in discovered devices list 0-5)
 struct DiscoveredIndexTag {};
 
-/// @brief Tag for PIO_Number (PIO pin number 1-3, HM-11 specific)
-struct PIONumberTag {};
-
 // ============================================================================
-// RangedInteger Type Aliases
+// Range-Constrained Integer Type Aliases
 // ============================================================================
-// These types provide compile-time and runtime range validation for numeric
-// values, directly matching Ada's subtype declarations with range constraints.
+// Ada `type X is range` maps to ada::RangedInteger (a distinct type);
+// Ada `subtype X is Natural/Positive range` maps to ada::IntegerSubtype (an int with a narrower range).
 
 /**
  * @brief Percentage type (0-100)
@@ -120,7 +109,7 @@ using Percent = ada::RangedInteger<uint8_t, 0, 100, PercentTag>;
  * Used for DHT11 and DS18B20 sensor temperature readings.
  * Ada source: hm11.ads:256 `subtype Temperature_Type is Natural range 0 .. 120;`
  */
-using TemperatureType = ada::RangedInteger<uint8_t, 0, 120, TemperatureTag>;
+using TemperatureType = ada::IntegerSubtype<ada::Natural, 0, 120>;
 
 /**
  * @brief Humidity reading type (0-100 percent)
@@ -128,7 +117,7 @@ using TemperatureType = ada::RangedInteger<uint8_t, 0, 120, TemperatureTag>;
  * Used for DHT11 sensor humidity readings.
  * Ada source: hm11.ads:257 `subtype Humidity_Type is Natural range 0 .. 100;`
  */
-using HumidityType = ada::RangedInteger<uint8_t, 0, 100, HumidityTag>;
+using HumidityType = ada::IntegerSubtype<ada::Natural, 0, 100>;
 
 /**
  * @brief BLE connection latency parameter (0-4)
@@ -160,7 +149,7 @@ using MacWhiteListIndex = ada::RangedInteger<uint8_t, 1, 3, MACWhiteListIndexTag
  * Time duration for device discovery scanning operations.
  * Ada source: hm11.ads:249 `subtype Discovery_Time is Positive range 1 .. 9;`
  */
-using DiscoveryTime = ada::RangedInteger<uint8_t, 1, 9, DiscoveryTimeTag>;
+using DiscoveryTime = ada::IntegerSubtype<ada::Positive, 1, 9>;
 
 /**
  * @brief Index in discovered devices list (0-5)
@@ -177,7 +166,7 @@ using DiscoveredIndex = ada::RangedInteger<uint8_t, 0, 5, DiscoveredIndexTag>;
  * Note: HM-11 has PIO0-PIO3, but PIO0 is system KEY and PIO1 is system LED.
  * Ada source: hm11.ads:232 `subtype PIO_Number is Positive range 1 .. 3;`
  */
-using PioNumber = ada::RangedInteger<uint8_t, 1, 3, PIONumberTag>;
+using PioNumber = ada::IntegerSubtype<ada::Positive, 1, 3>;
 
 // ============================================================================
 // FixedString Hex Type Aliases
