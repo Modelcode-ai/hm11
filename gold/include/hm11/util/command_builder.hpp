@@ -150,6 +150,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -157,15 +158,12 @@
 #include <type_traits>
 
 #include "hm11/types/enums.hpp"
-#include "hm11/types/fixed_string.hpp"
-#include "hm11/types/ranged_integer.hpp"
+#include "ada/fixed_string.hpp"
+#include "ada/integer_subtype.hpp"
+#include "ada/ranged_integer.hpp"
 #include "hm11/util/enum_mapping.hpp"
 
 namespace hm11::util {
-
-// Bring types into scope for template parameters
-using hm11::FixedString;
-using hm11::types::RangedInteger;
 
 /**
  * @brief Maximum size for AT command buffer
@@ -379,8 +377,8 @@ class CommandBuilder {
      * builder.append("AT+CON").append(mac); // "AT+CONB4994C123456"
      * @endcode
      */
-    template <std::size_t N, typename Validator>
-    constexpr CommandBuilder& append(const FixedString<N, Validator>& fs) noexcept {
+    template <std::size_t N, typename Validator, typename Tag>
+    constexpr CommandBuilder& append(const ada::FixedString<N, Validator, Tag>& fs) noexcept {
         return append(fs.view());
     }
 
@@ -404,8 +402,24 @@ class CommandBuilder {
      * @endcode
      */
     template <typename T, T Min, T Max, typename Tag>
-    constexpr CommandBuilder& append(const RangedInteger<T, Min, Max, Tag>& ri) noexcept {
-        T value = ri.get();
+    constexpr CommandBuilder& append(const ada::RangedInteger<T, Min, Max, Tag>& ri) noexcept {
+        return append_decimal(ri.get());
+    }
+
+    /**
+     * @brief Append any ada::IntegerSubtype (e.g. DiscoveryTime, PioNumber) as a decimal string
+     *
+     * Without this overload the subtype would convert to int and then to char, appending a raw byte.
+     */
+    template <typename Parent, auto Min, auto Max>
+    constexpr CommandBuilder& append(const ada::IntegerSubtype<Parent, Min, Max>& sub) noexcept {
+        return append_decimal(sub.get());
+    }
+
+    /**
+     * @brief Append an integer as a decimal string
+     */
+    template <std::integral T> constexpr CommandBuilder& append_decimal(T value) noexcept {
 
         // Handle negative values (though most HM-11 types are unsigned)
         if constexpr (std::is_signed_v<T>) {

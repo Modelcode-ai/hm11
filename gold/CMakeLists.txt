@@ -296,9 +296,6 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
     # Main test executable with all unit tests
     add_executable(hm11_tests
         tests/test_main.cpp
-        tests/test_validators.cpp
-        tests/test_fixed_string.cpp
-        tests/test_ranged_integer.cpp
         tests/test_uart_types.cpp
         tests/test_uart_port.cpp
         tests/test_stm32_uart_port.cpp
@@ -309,6 +306,7 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
         tests/test_watchdog.cpp
         tests/test_enum_mapping.cpp
         tests/test_parsing_utils.cpp
+        tests/test_type_aliases.cpp
         tests/util/command_builder_test.cpp
         tests/test_hm11_driver_core.cpp
         tests/test_hm11_driver_advertising.cpp
@@ -374,6 +372,9 @@ if(BUILD_TESTS AND NOT IS_EMBEDDED_TARGET)
 
     # Register test with CTest
     add_test(NAME unit_tests COMMAND hm11_tests)
+
+    # ada:: type library tests, built once per out-of-range behavior mode
+    add_subdirectory(tests/ada)
 else()
     message(STATUS "Tests disabled for embedded target")
 endif()

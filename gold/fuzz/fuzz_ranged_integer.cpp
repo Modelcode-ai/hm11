@@ -22,14 +22,14 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "hm11/types/ranged_integer.hpp"
+#include "ada/ranged_integer.hpp"
 
 // Define common RangedInteger types from the codebase
-using Percent = hm11::types::RangedInteger<uint8_t, 0, 100, struct PercentTag>;
-using Temperature = hm11::types::RangedInteger<uint8_t, 0, 120, struct TemperatureTag>;
-using Humidity = hm11::types::RangedInteger<uint8_t, 0, 100, struct HumidityTag>;
-using Latency = hm11::types::RangedInteger<uint8_t, 0, 4, struct LatencyTag>;
-using DiscoveryTime = hm11::types::RangedInteger<uint8_t, 1, 9, struct DiscoveryTimeTag>;
+using Percent = ada::RangedInteger<uint8_t, 0, 100, struct PercentTag>;
+using Temperature = ada::RangedInteger<uint8_t, 0, 120, struct TemperatureTag>;
+using Humidity = ada::RangedInteger<uint8_t, 0, 100, struct HumidityTag>;
+using Latency = ada::RangedInteger<uint8_t, 0, 4, struct LatencyTag>;
+using DiscoveryTime = ada::RangedInteger<uint8_t, 1, 9, struct DiscoveryTimeTag>;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (size < 2) {

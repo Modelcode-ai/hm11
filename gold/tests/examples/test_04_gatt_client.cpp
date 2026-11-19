@@ -400,8 +400,8 @@ TEST_F(GATTClientTest, ServiceDiscovery_HandleParsing) {
     bool result = parse_service_handles(service_info, start_handle, end_handle);
 
     EXPECT_TRUE(result);
-    EXPECT_EQ(std::string(start_handle), "0001");
-    EXPECT_EQ(std::string(end_handle), "000B");
+    EXPECT_EQ(start_handle.view(), "0001");
+    EXPECT_EQ(end_handle.view(), "000B");
 }
 
 // ============================================================================
@@ -485,7 +485,7 @@ TEST_F(GATTClientTest, CharacteristicDiscovery_PropertyParsing) {
     bool result = parse_characteristic_info(char_info, handle, properties, uuid);
 
     EXPECT_TRUE(result);
-    EXPECT_EQ(std::string(handle), "0003");
+    EXPECT_EQ(handle.view(), "0003");
     EXPECT_EQ(properties, "RD|--|--|NO|--");
     EXPECT_EQ(uuid, "2A00");
 

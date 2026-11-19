@@ -2427,7 +2427,7 @@ class HM11Driver {
      * @post Module PIN code configured to specified value
      *
      * @note Default: "000000"
-     * @note PIN must be 6 decimal digits (enforced by FixedString<6, DigitCharValidator>)
+     * @note PIN must be 6 decimal digits (enforced by PinType)
      * @note PIN is used only when bond mode requires authentication
      *
      * Corresponds to Ada's Set_PIN_Code procedure (hm11.adb:2171-2181)
@@ -2550,7 +2550,7 @@ class HM11Driver {
      * @note This command added in V523
      * @note White list capacity: 3 addresses maximum (indices 1-3)
      * @note Index enforced by RangedInteger<uint8_t, 1, 3>
-     * @note MAC address format: 12 hexadecimal characters (enforced by FixedString<12, HexCharValidator>)
+     * @note MAC address format: 12 hexadecimal characters (enforced by MacAddress)
      * @note White list must be enabled via Set_White_List_Switch to take effect
      *
      * Corresponds to Ada's Set_White_List_MAC_Addresses procedure (hm11.adb:822-834)
@@ -2622,7 +2622,7 @@ class HM11Driver {
      * @post status == UartStatus::Ok if service UUID set successfully
      * @post Module advertises specified service UUID
      *
-     * @note UUID format: 4 hexadecimal characters (enforced by FixedString<4, HexCharValidator>)
+     * @note UUID format: 4 hexadecimal characters (enforced by UUID)
      * @note Example: "180F" (Battery Service UUID)
      * @note HM-11 only supports 16-bit UUIDs, not full 128-bit UUIDs
      * @note Command includes "0x" prefix: "AT+UUID0x180F"
@@ -4121,7 +4121,7 @@ void HM11Driver<UARTImpl, ReceiveHandler>::get_discovery_time(
         const auto TIME_CHAR = static_cast<char>(buffer[OK_GET.size()]);
         const auto TIME_VALUE = char_to_digit(TIME_CHAR);
 
-        // DiscoveryTime is RangedInteger<uint8_t, 1, 9>
+        // DiscoveryTime is an ada::IntegerSubtype of Positive, range 1 .. 9
         // Validation happens in constructor
         time = types::DiscoveryTime{TIME_VALUE};
     }
@@ -4132,7 +4132,7 @@ template <typename UARTImpl, typename ReceiveHandler>
 void HM11Driver<UARTImpl, ReceiveHandler>::set_discovery_time(
     types::DiscoveryTime time,
     hal::UartStatus& status) noexcept {
-    // Convert RangedInteger to string
+    // Convert DiscoveryTime to string
     const auto TIME_VALUE = time.get();
     char time_char = static_cast<char>('0' + TIME_VALUE);
     std::string_view time_str(&time_char, 1);
